@@ -33,19 +33,37 @@ http://localhost:5000/?props={"mapOptions":{"zoom":12.774952540009707,"pitch":0,
 
 Server and REST API for printing components to PDF files and managing their metadata in a Postgres database.
 
-Start Postgres:
+Start a Postgres Docker container:
 
 ```
-docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres
+docker run -d -p 5432:5432 --name routemap-postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
 
 IMPORTANT:
 
-Manually add a default row to the `routepath_import_config` table:
+Manually create and add a default row to the `routepath_import_config` table.
 
 ```
-INSERT INTO "public"."routepath_import_config" ("name", "target_date", "status", "created_at", "updated_at") VALUES ('default', '2019-07-02', 'READY', DEFAULT, DEFAULT)
+docker exec -it routemap-postgres psql postgres postgres
 ```
+
+Inside container psql-shell:
+
+```
+CREATE TYPE status AS ENUM ('READY', 'PENDING', 'ERROR', 'EMPTY');
+	
+create table public.routepath_import_config(
+name varchar primary key,
+target_date date not null,
+status status,
+created_at date not null DEFAULT Now(),
+updated_at date not null DEFAULT Now());
+
+INSERT INTO "public"."routepath_import_config" ("name", "target_date", "status", "created_at", "updated_at") VALUES ('default', '2019-07-02', 'READY', DEFAULT, DEFAULT);
+```
+Exit psql and container: 
+
+`\q`
 
 Start server:
 
@@ -57,19 +75,9 @@ As soon as it is started, run the "Päivitä" function of the linjakarttageneraa
 
 ### Running in Docker
 
-Start a Postgres Docker container:
+Do the same steps as in previous chapter except for the last part.
 
-```
-docker run -d --name routemap-postgres -e POSTGRES_PASSWORD=postgres postgres
-```
 
-IMPORTANT:
-
-Manually add a default row to the `routepath_import_config` table:
-
-```
-INSERT INTO "public"."routepath_import_config" ("name", "target_date", "status", "created_at", "updated_at") VALUES ('default', '2019-07-02', 'READY', DEFAULT, DEFAULT)
-```
 
 Build and start the container:
 
