@@ -9,7 +9,7 @@ cleanup(() => {
 });
 
 async function generatePoints(date) {
-  return knex.raw('select * from jorestatic.create_intermediate_points(?)', [date]);
+  return knex.raw('select jorestatic.create_intermediate_points(?)', [date]);
 }
 
 module.exports = {
