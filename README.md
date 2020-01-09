@@ -33,11 +33,28 @@ http://localhost:5000/?props={"mapOptions":{"zoom":12.774952540009707,"pitch":0,
 
 Server and REST API for printing components to PDF files and managing their metadata in a Postgres database.
 
-Start a Postgres Docker container:
+#### 1.
+Start a Postgres Docker container for routemap:
 
 ```
 docker run -d -p 5432:5432 --name routemap-postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
+
+#### 2.
+ Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+
+Start server:
+
+```
+PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNETION_STRING=placeholder yarn server
+```
+
+#### 3.
+As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä.
+
+### Running in Docker
+
+Create a Postgres database container like in step [1.](1.)
 
 IMPORTANT:
 
@@ -51,7 +68,7 @@ Inside container psql-shell:
 
 ```
 CREATE TYPE status AS ENUM ('READY', 'PENDING', 'ERROR', 'EMPTY');
-	
+
 create table public.routepath_import_config(
 name varchar primary key,
 target_date date not null,
@@ -61,29 +78,16 @@ updated_at date not null DEFAULT Now());
 
 INSERT INTO "public"."routepath_import_config" ("name", "target_date", "status", "created_at", "updated_at") VALUES ('default', '2019-07-02', 'READY', DEFAULT, DEFAULT);
 ```
-Exit psql and container: 
+Exit psql and container:
 
 `\q`
-
-Start server:
-
-```
-PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres yarn server
-```
-
-As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä.
-
-### Running in Docker
-
-Do the same steps as in previous chapter except for the last part.
-
 
 
 Build and start the container:
 
 ```
 docker build -t hsl-routemap-server .
-docker run -d -p 4000:4000 -v $(pwd)/output:/output -v $(pwd)/fonts:/fonts --link routemap-postgres -e "PG_CONNECTION_STRING=postgres://postgres:postgres@routemap-postgres:5432/postgres" -e "PG_JORE_CONNECTION_STRING=placeholder"  -e "PG_JORE_CONNECTION_STRING_i2=placeholder" --shm-size=1G hsl-routemap-server
+docker run -d -p 4000:4000 -v $(pwd)/output:/output -v $(pwd)/fonts:/fonts --link routemap-postgres -e "PG_CONNECTION_STRING=postgres://postgres:postgres@routemap-postgres:5432/postgres" -e "PG_JORE_CONNECTION_STRING=placeholder" --shm-size=1G hsl-routemap-server
 ```
 
 As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä.
