@@ -39,14 +39,14 @@ Start a Postgres Docker container for routemap:
 ```
 docker run -d -p 5432:5432 --name routemap-postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
-
+s
 #### 2.
- Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+ Replace `PG_JORE_CONNECTION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
 
 Start server:
 
 ```
-PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNETION_STRING=placeholder yarn server
+PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNECTION_STRING=placeholder yarn server
 ```
 
 #### 3.
