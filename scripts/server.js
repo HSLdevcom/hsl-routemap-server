@@ -163,7 +163,7 @@ async function main() {
       ctx.throw(400, 'Missing targetDate query parameter');
     } else {
       config = await setDateConfig(targetDate);
-      generatePoints(config.target_date)
+      await generatePoints(config.target_date)
         .then(async () => {
           await setStatusConfig('READY');
         })
