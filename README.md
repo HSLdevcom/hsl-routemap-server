@@ -34,22 +34,33 @@ http://localhost:5000/?props={"mapOptions":{"zoom":12.774952540009707,"pitch":0,
 Server and REST API for printing components to PDF files and managing their metadata in a Postgres database.
 
 #### 1.
+
 Start a Postgres Docker container for routemap:
 
 ```
 docker run -d -p 5432:5432 --name routemap-postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
-s
+
 #### 2.
- Replace `PG_JORE_CONNECTION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+
+Start a Jore PostGIS Docker container:
+
+```
+docker run -d -p 5532:5432 --name jore-postgis -e POSTGRES_PASSWORD=postgres jore-postgis
+```
+
+#### 3.
+
+Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
 
 Start server:
 
 ```
-PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNECTION_STRING=placeholder yarn server
+PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNECTION_STRING=postgres://postgres:postgres@localhost:5532/postgres yarn server
 ```
 
-#### 3.
+#### 4.
+
 As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä.
 
 ### Running in Docker
@@ -78,10 +89,10 @@ updated_at date not null DEFAULT Now());
 
 INSERT INTO "public"."routepath_import_config" ("name", "target_date", "status", "created_at", "updated_at") VALUES ('default', '2019-07-02', 'READY', DEFAULT, DEFAULT);
 ```
+
 Exit psql and container:
 
 `\q`
-
 
 Build and start the container:
 
