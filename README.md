@@ -61,7 +61,7 @@ PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JOR
 
 #### 4.
 
-As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä.
+As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä. If the update function is disabled try running the sql script mentioned below.
 
 ### Running in Docker
 
