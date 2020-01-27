@@ -46,7 +46,7 @@ docker run -d -p 5432:5432 --name routemap-postgres -e POSTGRES_PASSWORD=postgre
 Start a Jore PostGIS Docker container:
 
 ```
-docker run -d -p 5532:5432 --name jore-postgis -e POSTGRES_PASSWORD=postgres jore-postgis
+docker run -d -p 5532:5432 --name hsl-jore-postgis -v jore-data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres -e AZURE_STORAGE_ACCOUNT= -e AZURE_STORAGE_KEY= -e AZURE_STORAGE_CONTAINER= hsl-jore-postgis
 ```
 
 #### 3.
