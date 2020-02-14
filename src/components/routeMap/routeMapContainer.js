@@ -263,6 +263,10 @@ const terminalMapper = mapProps(props => {
     routes: { enabled: true },
   };
 
+  if (props.configuration.zoneLabels) {
+    mapComponents.ticket_zone_labels = { enabled: true };
+  }
+
   if (props.configuration.nearBuses) {
     mapComponents.near_bus_routes = { enabled: true };
   } else {

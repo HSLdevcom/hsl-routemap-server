@@ -14,7 +14,7 @@ export function fetchMap(mapOptions, mapStyle, scale = scaleDefault) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ options: { ...mapOptions, scale }, style: mapStyle }),
   };
-
+  console.log(`generating tileset with ${API_URL}/generateImage`);
   return fetch(`${API_URL}/generateImage`, options)
     .then(response => response.blob())
     .then(
