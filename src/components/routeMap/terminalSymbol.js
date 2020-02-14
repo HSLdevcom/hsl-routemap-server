@@ -37,6 +37,7 @@ const TerminalSymbol = props => {
 
 TerminalSymbol.propTypes = {
   size: PropTypes.number.isRequired,
+  node: PropTypes.string.isRequired,
 };
 
 export default TerminalSymbol;

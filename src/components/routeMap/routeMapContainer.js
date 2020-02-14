@@ -307,7 +307,10 @@ const hoc = compose(
         });
       },
     }),
-    branch(props => !props.alphaChannel, () => () => null),
+    branch(
+      props => !props.alphaChannel,
+      () => () => null,
+    ),
   ),
 );
 

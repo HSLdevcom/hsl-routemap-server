@@ -147,9 +147,11 @@ function getNextPlacement(initialPlacement, index, diffs, bbox, alphaByteArray, 
     ];
   }, []);
 
-  const nextPlacement = [initialPlacement, ...placements, ...placementsOverlapping].reduce(
-    (prev, cur) => comparePlacements(prev, cur, bbox, alphaByteArray, closeByPositions),
-  );
+  const nextPlacement = [
+    initialPlacement,
+    ...placements,
+    ...placementsOverlapping,
+  ].reduce((prev, cur) => comparePlacements(prev, cur, bbox, alphaByteArray, closeByPositions));
 
   return nextPlacement;
 }
