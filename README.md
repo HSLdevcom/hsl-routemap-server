@@ -51,12 +51,12 @@ docker run -d -p 5532:5432 --name jore-postgis -e POSTGRES_PASSWORD=postgres jor
 
 #### 3.
 
-Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+Replace `PG_JORE_CONNECTION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
 
 Start server:
 
 ```
-PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNECTION_STRING=postgres://postgres:postgres@localhost:5532/postgres yarn server
+PG_ROUTEMAP_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNECTION_STRING=postgres://postgres:postgres@localhost:5532/postgres yarn server
 ```
 
 #### 4.
@@ -98,7 +98,7 @@ Build and start the container:
 
 ```
 docker build -t hsl-routemap-server .
-docker run -d -p 4000:4000 -v $(pwd)/output:/output -v $(pwd)/fonts:/fonts --link routemap-postgres -e "PG_CONNECTION_STRING=postgres://postgres:postgres@routemap-postgres:5432/postgres" -e "PG_JORE_CONNECTION_STRING=placeholder" --shm-size=1G hsl-routemap-server
+docker run -d -p 4000:4000 -v $(pwd)/output:/output -v $(pwd)/fonts:/fonts --link routemap-postgres -e "PG_ROUTEMAP_CONNECTION_STRING=postgres://postgres:postgres@routemap-postgres:5432/postgres" -e "PG_JORE_CONNECTION_STRING=placeholder" --shm-size=1G hsl-routemap-server
 ```
 
 As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä.

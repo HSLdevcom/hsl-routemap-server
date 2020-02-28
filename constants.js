@@ -31,7 +31,7 @@ const secretsEnv = mapValues(process.env, (value, key) => {
 });
 
 module.exports = {
-  PG_CONNECTION_STRING: secretsEnv.PG_CONNECTION_STRING || '',
+  PG_ROUTEMAP_CONNECTION_STRING: secretsEnv.PG_ROUTEMAP_CONNECTION_STRING || '',
   PG_JORE_CONNECTION_STRING: secretsEnv.PG_JORE_CONNECTION_STRING || '',
   JORE_GRAPHQL_URL: secretsEnv.JORE_GRAPHQL_URL || '',
   GENERATE_API_URL: secretsEnv.GENERATE_API_URL || '',
