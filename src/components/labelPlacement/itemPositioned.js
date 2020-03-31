@@ -85,12 +85,13 @@ ItemPositioned.defaultProps = {
   transform: 0,
   allowCollision: false,
   shouldBeVisible: true,
+  distance: 0,
 };
 
 ItemPositioned.propTypes = {
   x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
-  distance: PropTypes.number.isRequired,
+  distance: PropTypes.number,
   angle: PropTypes.number,
   children: PropTypes.element.isRequired,
   visible: PropTypes.bool,

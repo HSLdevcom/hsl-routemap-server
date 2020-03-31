@@ -263,14 +263,21 @@ const terminalMapper = mapProps(props => {
     routes: { enabled: true },
   };
 
-  if (props.configuration.zoneLabels) {
-    mapComponents.ticket_zone_labels = { enabled: true };
-  }
-
   if (props.configuration.nearBuses) {
     mapComponents.near_bus_routes = { enabled: true };
   } else {
     mapComponents.regular_routes = { enabled: true };
+  }
+
+  const projectedSymbols = [];
+  const { zoneSymbols } = props.mapOptions;
+  if (zoneSymbols) {
+    Object.keys(zoneSymbols).forEach(zone => {
+      zoneSymbols[zone].forEach(symbol => {
+        const [sy, sx] = viewport.project([symbol[0], symbol[1]]);
+        projectedSymbols.push({ zone, sx, sy, size: props.mapOptions.zoneSymbolSize });
+      });
+    });
   }
 
   return {
@@ -282,6 +289,7 @@ const terminalMapper = mapProps(props => {
     projectedTerminuses,
     projectedIntermediates,
     projectedStops,
+    projectedSymbols,
     date: props.date,
   };
 });
