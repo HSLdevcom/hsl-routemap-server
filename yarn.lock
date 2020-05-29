@@ -4423,7 +4423,7 @@ hpack.js@^2.1.6:
 
 "hsl-map-style@github:hsldevcom/hsl-map-style#master":
   version "1.0.0"
-  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/d0412520a4aa85470573f44f964211b785612921"
+  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/7cb4b937d37dfbdb86d39e690e5d1d92ed422804"
   dependencies:
     lodash "^4.17.4"
 
