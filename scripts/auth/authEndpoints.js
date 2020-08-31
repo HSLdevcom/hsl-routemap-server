@@ -1,8 +1,10 @@
 const { get, last, clone } = require('lodash');
 const AuthService = require('./authService');
 
+const { DOMAINS_ALLOWED_TO_LOGIN } = require('../../constants');
+
 // TODO: Envify
-const allowedDomains = ['cgi.com', 'hsl.fi'];
+const allowedDomains = DOMAINS_ALLOWED_TO_LOGIN.split(',');
 const allowedGroup = 'Karttageneraattori';
 
 const hasAllowedGroup = async userInfo => {
