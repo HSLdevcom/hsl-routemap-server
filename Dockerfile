@@ -19,6 +19,9 @@ ENV WORK /opt/publisher
 RUN mkdir -p ${WORK}
 WORKDIR ${WORK}
 
+RUN apt-get update \
+    && apt-get install -y wget libxss1
+
 # Add privileges for puppeteer user
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
   && mkdir -p /home/pptruser/Downloads \
