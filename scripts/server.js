@@ -1,8 +1,9 @@
 const Koa = require('koa');
 const Router = require('koa-router');
+const session = require('koa-session');
 const cors = require('@koa/cors');
 const jsonBody = require('koa-json-body');
-
+const authEndpoints = require('./auth/authEndpoints');
 const generator = require('./generator');
 const {
   migrate,
@@ -178,9 +179,43 @@ async function main() {
     ctx.body = await getConfig();
   });
 
+  router.post('/login', async ctx => {
+    const authResponse = await authEndpoints.authorize(ctx.request, ctx.response, ctx.session);
+    ctx.session = null;
+    if (authResponse.modifiedSession) {
+      ctx.session = authResponse.modifiedSession;
+    }
+    ctx.body = authResponse.body;
+    ctx.response.status = authResponse.status;
+  });
+
+  router.get('/logout', async ctx => {
+    const authResponse = await authEndpoints.logout(ctx.request, ctx.response, ctx.session);
+    ctx.session = null;
+    ctx.response.status = authResponse.status;
+  });
+
+  router.get('/session', async ctx => {
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+    ctx.body = authResponse.body;
+    ctx.response.status = authResponse.status;
+  });
+
+  app.keys = ['secret key'];
+
+  app.use(session(app));
+
   app
     .use(errorHandler)
-    .use(cors())
+    .use(
+      cors({
+        credentials: true,
+      }),
+    )
     .use(jsonBody({ fallback: true, limit: '10mb' }))
     .use(router.routes())
     .use(router.allowedMethods())

@@ -35,9 +35,13 @@ const TerminalSymbol = props => {
   return icon && <InlineSVG src={icon} style={divStyle} width={props.size} height={props.size} />;
 };
 
+TerminalSymbol.defaultProps = {
+  node: null,
+};
+
 TerminalSymbol.propTypes = {
   size: PropTypes.number.isRequired,
-  node: PropTypes.string.isRequired,
+  node: PropTypes.string,
 };
 
 export default TerminalSymbol;
