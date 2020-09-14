@@ -58,7 +58,7 @@ ZoneSymbol.propTypes = {
 };
 
 ZoneSymbol.defaultProps = {
-  size: '30px',
+  size: '200px',
 };
 
 const RouteMap = props => {
@@ -86,13 +86,6 @@ const RouteMap = props => {
           mapComponents={props.mapComponents}
           configuration={props.configuration}
           alphaChannel={props.alphaChannel}>
-          {projectedSymbols &&
-            projectedSymbols.length > 0 &&
-            projectedSymbols.map((symbol, index) => (
-              <ItemFixed key={index} left={symbol.sy} top={symbol.sx}>
-                <ZoneSymbol size={symbol.size} zone={symbol.zone} />
-              </ItemFixed>
-            ))}
           {props.projectedTerminuses.map((terminus, index) => (
             <ItemFixed
               key={index}
@@ -156,6 +149,13 @@ const RouteMap = props => {
                 </ItemFixed>
               );
             })}
+          {projectedSymbols &&
+            projectedSymbols.length > 0 &&
+            projectedSymbols.map((symbol, index) => (
+              <ItemFixed key={index} left={symbol.sy} top={symbol.sx}>
+                <ZoneSymbol size={symbol.size} zone={symbol.zone} />
+              </ItemFixed>
+            ))}
           {props.projectedTerminuses.map((terminus, index) => (
             <ItemPositioned
               key={index}
