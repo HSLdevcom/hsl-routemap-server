@@ -149,6 +149,27 @@ const RouteMap = props => {
                 </ItemFixed>
               );
             })}
+          {props.projectedStations
+            .filter(station => station.mode === '06' || station.mode === '12')
+            .map((name, index) => (
+              <ItemPositioned
+                key={index}
+                x={name.x}
+                y={name.y}
+                distance={5}
+                anchorWidth={1}
+                maxDistance={40}
+                angle={45}
+                distancePriority={6}
+                alphaOverlapPriority={0.1}>
+                <StationName
+                  nameFi={name.nameFi}
+                  nameSe={name.nameSe}
+                  type={name.mode}
+                  configuration={props.configuration}
+                />
+              </ItemPositioned>
+            ))}
           {projectedSymbols &&
             projectedSymbols.length > 0 &&
             projectedSymbols.map((symbol, index) => (
@@ -174,27 +195,6 @@ const RouteMap = props => {
               />
             </ItemPositioned>
           ))}
-          {props.projectedStations
-            .filter(station => station.mode === '06' || station.mode === '12')
-            .map((name, index) => (
-              <ItemPositioned
-                key={index}
-                x={name.x}
-                y={name.y}
-                distance={5}
-                anchorWidth={1}
-                maxDistance={40}
-                angle={45}
-                distancePriority={6}
-                alphaOverlapPriority={0.1}>
-                <StationName
-                  nameFi={name.nameFi}
-                  nameSe={name.nameSe}
-                  type={name.mode}
-                  configuration={props.configuration}
-                />
-              </ItemPositioned>
-            ))}
           <ItemFixed top={mapStyle.height - INFO_MARGIN_BOTTOM} left={INFO_MARGIN_LEFT}>
             <div style={scaleStyle}>
               <Scalebar
