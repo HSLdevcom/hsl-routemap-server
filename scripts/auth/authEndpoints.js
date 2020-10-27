@@ -3,15 +3,14 @@ const AuthService = require('./authService');
 
 const { DOMAINS_ALLOWED_TO_LOGIN } = require('../../constants');
 
-// TODO: Envify
 const allowedDomains = DOMAINS_ALLOWED_TO_LOGIN.split(',');
-const allowedGroup = 'Karttageneraattori';
+const testGroup = 'Karttageneraattori-test';
 
-const hasAllowedGroup = async userInfo => {
+const hasAllowedDomain = async userInfo => {
   const groupNames = get(userInfo, 'groups');
   const domain = last(userInfo.email.toLowerCase().split('@')) || '';
 
-  if (groupNames.includes(allowedGroup)) {
+  if (groupNames.includes(testGroup)) {
     return true;
   }
 
@@ -20,10 +19,6 @@ const hasAllowedGroup = async userInfo => {
     return false;
   }
 
-  if (allowedDomains.includes(domain) && !groupNames.includes(allowedGroup)) {
-    groupNames.push(allowedGroup);
-    await AuthService.setGroup(userInfo.userId, groupNames);
-  }
   return true;
 };
 
@@ -62,7 +57,7 @@ const authorize = async (req, res, session) => {
   if (session && tokenResponse.access_token) {
     modifiedSession.accessToken = tokenResponse.access_token;
     const userInfo = await AuthService.requestUserInfo(modifiedSession.accessToken);
-    const isAllowed = await hasAllowedGroup(userInfo);
+    const isAllowed = await hasAllowedDomain(userInfo);
     if (!isAllowed) {
       return {
         status: 401,
@@ -99,7 +94,7 @@ const authorize = async (req, res, session) => {
 
 const checkExistingSession = async (req, res, session) => {
   if (session && session.accessToken) {
-    const isAllowed = await hasAllowedGroup(session);
+    const isAllowed = await hasAllowedDomain(session);
     if (!isAllowed) {
       await AuthService.logoutFromIdentityProvider(session.accessToken);
       return {
