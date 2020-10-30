@@ -20,7 +20,7 @@ RUN mkdir -p ${WORK}
 WORKDIR ${WORK}
 
 RUN apt-get update \
-    && apt-get install -y wget libxss1
+    && apt-get install -y wget libxss1 libxtst6
 
 # Add privileges for puppeteer user
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
