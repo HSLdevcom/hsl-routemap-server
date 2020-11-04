@@ -111,6 +111,14 @@ async function main() {
 
   router.post('/posters', async ctx => {
     const { buildId, props } = ctx.request.body;
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+    if (!authResponse.body.isOk) {
+      ctx.throw(401, 'Not allowed.');
+    }
     const posters = [];
     for (let i = 0; i < props.length; i++) {
       // eslint-disable-next-line no-await-in-loop
