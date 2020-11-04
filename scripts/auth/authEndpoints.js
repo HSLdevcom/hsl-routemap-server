@@ -1,16 +1,15 @@
 const { get, last, clone } = require('lodash');
 const AuthService = require('./authService');
 
-const { DOMAINS_ALLOWED_TO_LOGIN } = require('../../constants');
+const { DOMAINS_ALLOWED_TO_LOGIN, ROUTEMAP_TEST_GROUP } = require('../../constants');
 
 const allowedDomains = DOMAINS_ALLOWED_TO_LOGIN.split(',');
-const testGroup = 'Karttageneraattori-test';
 
 const hasAllowedDomain = async userInfo => {
   const groupNames = get(userInfo, 'groups');
   const domain = last(userInfo.email.toLowerCase().split('@')) || '';
 
-  if (groupNames.includes(testGroup)) {
+  if (groupNames.includes(ROUTEMAP_TEST_GROUP)) {
     return true;
   }
 
