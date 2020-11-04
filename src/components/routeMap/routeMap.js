@@ -5,6 +5,11 @@ import ItemContainer from 'components/labelPlacement/itemContainer';
 import ItemFixed from 'components/labelPlacement/itemFixed';
 import ItemPositioned from 'components/labelPlacement/itemPositioned';
 
+import AZone from 'icons/icon-Zone-A';
+import BZone from 'icons/icon-Zone-B';
+import CZone from 'icons/icon-Zone-C';
+import DZone from 'icons/icon-Zone-D';
+
 import { preventFromOverlap } from '../../util/terminals';
 import { getTransformedCoord } from '../../util/arrows';
 import TerminalSymbol from './terminalSymbol';
@@ -28,6 +33,34 @@ const ARROW_DISTANCE_FROM_ROAD = 10;
 const INFO_MARGIN_BOTTOM = 78;
 const INFO_MARGIN_LEFT = 44;
 
+const getZoneIcon = (zone, size) => {
+  switch (zone) {
+    case 'A':
+      return <AZone size={size} />;
+    case 'B':
+      return <BZone size={size} />;
+    case 'C':
+      return <CZone size={size} />;
+    case 'D':
+      return <DZone size={size} />;
+    default:
+      return <div />;
+  }
+};
+
+const ZoneSymbol = props => (
+  <div className={styles.zoneSymbol}>{getZoneIcon(props.zone, props.size)}</div>
+);
+
+ZoneSymbol.propTypes = {
+  size: PropTypes.string,
+  zone: PropTypes.string.isRequired,
+};
+
+ZoneSymbol.defaultProps = {
+  size: '200px',
+};
+
 const RouteMap = props => {
   const mapStyle = {
     width: props.mapOptions.width,
@@ -41,7 +74,7 @@ const RouteMap = props => {
   };
 
   const nonOverlappingStations = preventFromOverlap(props.projectedStations, TERMINAL_SIZE);
-
+  const { projectedSymbols } = props;
   return (
     <div className={styles.root}>
       <div className={styles.map} style={mapStyle}>
@@ -116,24 +149,6 @@ const RouteMap = props => {
                 </ItemFixed>
               );
             })}
-          {props.projectedTerminuses.map((terminus, index) => (
-            <ItemPositioned
-              key={index}
-              x={terminus.x}
-              y={terminus.y}
-              distance={10}
-              anchorWidth={1}
-              distancePriority={terminus.lines.length > 5 ? 4 : 16}
-              angle={45}>
-              <TerminusLabel
-                lines={terminus.lines}
-                nameFi={terminus.nameFi}
-                nameSe={terminus.nameSe}
-                type={terminus.type}
-                configuration={props.configuration}
-              />
-            </ItemPositioned>
-          ))}
           {props.projectedStations
             .filter(station => station.mode === '06' || station.mode === '12')
             .map((name, index) => (
@@ -155,6 +170,31 @@ const RouteMap = props => {
                 />
               </ItemPositioned>
             ))}
+          {projectedSymbols &&
+            projectedSymbols.length > 0 &&
+            projectedSymbols.map((symbol, index) => (
+              <ItemFixed key={index} left={symbol.sy} top={symbol.sx}>
+                <ZoneSymbol size={symbol.size} zone={symbol.zone} />
+              </ItemFixed>
+            ))}
+          {props.projectedTerminuses.map((terminus, index) => (
+            <ItemPositioned
+              key={index}
+              x={terminus.x}
+              y={terminus.y}
+              distance={10}
+              anchorWidth={1}
+              distancePriority={terminus.lines.length > 5 ? 4 : 16}
+              angle={45}>
+              <TerminusLabel
+                lines={terminus.lines}
+                nameFi={terminus.nameFi}
+                nameSe={terminus.nameSe}
+                type={terminus.type}
+                configuration={props.configuration}
+              />
+            </ItemPositioned>
+          ))}
           <ItemFixed top={mapStyle.height - INFO_MARGIN_BOTTOM} left={INFO_MARGIN_LEFT}>
             <div style={scaleStyle}>
               <Scalebar
@@ -231,6 +271,7 @@ RouteMap.propTypes = {
   projectedTerminuses: PropTypes.arrayOf(TerminusType).isRequired,
   projectedIntermediates: PropTypes.arrayOf(IntermediateType).isRequired,
   projectedStops: PropTypes.arrayOf(StopType).isRequired,
+  projectedSymbols: PropTypes.arrayOf(Object).isRequired,
   mapOptions: PropTypes.shape(MapOptions).isRequired,
   mapComponents: PropTypes.object.isRequired, // eslint-disable-line
   pxPerMeterRatio: PropTypes.number.isRequired,

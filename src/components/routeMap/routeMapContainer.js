@@ -269,6 +269,17 @@ const terminalMapper = mapProps(props => {
     mapComponents.regular_routes = { enabled: true };
   }
 
+  const projectedSymbols = [];
+  const { zoneSymbols } = props.mapOptions;
+  if (zoneSymbols) {
+    Object.keys(zoneSymbols).forEach(zone => {
+      zoneSymbols[zone].forEach(symbol => {
+        const [sy, sx] = viewport.project([symbol[0], symbol[1]]);
+        projectedSymbols.push({ zone, sx, sy, size: props.mapOptions.zoneSymbolSize });
+      });
+    });
+  }
+
   return {
     mapOptions,
     configuration: props.configuration,
@@ -278,6 +289,7 @@ const terminalMapper = mapProps(props => {
     projectedTerminuses,
     projectedIntermediates,
     projectedStops,
+    projectedSymbols,
     date: props.date,
   };
 });
