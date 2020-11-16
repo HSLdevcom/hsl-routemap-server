@@ -3,6 +3,7 @@ const Router = require('koa-router');
 const session = require('koa-session');
 const cors = require('@koa/cors');
 const jsonBody = require('koa-json-body');
+const { get } = require('lodash');
 const authEndpoints = require('./auth/authEndpoints');
 const generator = require('./generator');
 const {
@@ -111,6 +112,14 @@ async function main() {
 
   router.post('/posters', async ctx => {
     const { buildId, props } = ctx.request.body;
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+    if (!authResponse.body.isOk) {
+      ctx.throw(401, 'Not allowed.');
+    }
     const posters = [];
     for (let i = 0; i < props.length; i++) {
       // eslint-disable-next-line no-await-in-loop
@@ -143,11 +152,13 @@ async function main() {
 
   router.get('/downloadPoster/:id', async ctx => {
     const { id } = ctx.params;
+    const poster = await getPoster({ id });
+    const name = get(poster, 'props.configuration.name');
     await downloadPostersFromCloud([id]);
     const content = await generator.concatenate([id]);
 
     ctx.type = 'application/pdf';
-    ctx.set('Content-Disposition', `attachment; filename="Linjakartta-${id}.pdf"`);
+    ctx.set('Content-Disposition', `attachment; filename="${name}.pdf"`);
     ctx.body = content;
 
     content.on('close', () => {
