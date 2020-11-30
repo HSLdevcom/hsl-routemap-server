@@ -4,18 +4,17 @@ const puppeteer = require('puppeteer');
 const { spawn } = require('child_process');
 const { uploadPosterToCloud } = require('./cloudService');
 
+const { getPoster } = require('./store');
+
 const CLIENT_URL = 'http://localhost:5000';
 const RENDER_TIMEOUT = 24 * 60 * 60 * 1000;
 const MAX_RENDER_ATTEMPTS = 3;
 const SCALE = 96 / 72;
-const { JORE_GRAPHQL_URL } = process.env;
 
 let browser = null;
 let currentId = null;
-let canceled = false;
 
 let previous = Promise.resolve();
-const canceledPosters = [];
 
 const outputPath = path.join(__dirname, '..', 'output');
 const pdfPath = id => path.join(outputPath, `${id}.pdf`);
@@ -37,7 +36,10 @@ async function renderComponent(options) {
   props.id = id;
   const page = await browser.newPage();
 
-  if (canceled || canceledPosters.includes(id)) {
+  const poster = await getPoster({ id: options.id });
+  const { status } = poster;
+
+  if (status === 'FAILED') {
     page.close();
     browser.close();
     onInfo('Canceled');
@@ -99,10 +101,10 @@ async function renderComponent(options) {
 
 async function renderComponentRetry(options) {
   const { onInfo, onError } = options;
-  canceled = false;
   for (let i = 0; i < MAX_RENDER_ATTEMPTS; i++) {
     /* eslint-disable no-await-in-loop */
-    if (canceled || canceledPosters.includes(options.id)) {
+    const poster = await getPoster({ id: options.id });
+    if (poster.status === 'FAILED') {
       i = MAX_RENDER_ATTEMPTS;
     }
     try {
@@ -121,7 +123,6 @@ async function renderComponentRetry(options) {
       onInfo('Rendered successfully');
       return { success: true };
     } catch (error) {
-      canceledPosters.splice(canceledPosters.indexOf(options.id), 1);
       onError(error);
     }
   }
@@ -131,14 +132,12 @@ async function renderComponentRetry(options) {
 
 function cancelProcess(options) {
   if (options.id === currentId) {
-    canceled = true;
     if (browser) {
       browser.close();
       options.onInfo('Canceled');
     }
     return true;
   }
-  canceledPosters.push(options.id);
   return false;
 }
 

@@ -130,8 +130,9 @@ async function main() {
     ctx.body = posters;
   });
 
-  router.post('/removePosters', async ctx => {
+  router.post('/cancelPoster', async ctx => {
     const { item } = ctx.request.body;
+    console.log('cancellll');
     const onInfo = message => {
       const date = new Date().toUTCString();
       console.log(`${date} ${item.id}: ${message}`); // eslint-disable-line no-console
@@ -140,7 +141,14 @@ async function main() {
       id: item.id,
       onInfo,
     };
+    const poster = await updatePoster({ id: item.id, status: 'FAILED' });
     generator.cancelProcess(options);
+
+    ctx.body = poster;
+  });
+
+  router.post('/removePosters', async ctx => {
+    const { item } = ctx.request.body;
     const poster = await removePoster({ id: item.id });
 
     ctx.body = poster;
