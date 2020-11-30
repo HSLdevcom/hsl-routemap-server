@@ -11,7 +11,11 @@ const SCALE = 96 / 72;
 const { JORE_GRAPHQL_URL } = process.env;
 
 let browser = null;
+let currentId = null;
+let canceled = false;
+
 let previous = Promise.resolve();
+const canceledPosters = [];
 
 const outputPath = path.join(__dirname, '..', 'output');
 const pdfPath = id => path.join(outputPath, `${id}.pdf`);
@@ -29,9 +33,15 @@ async function initialize() {
  */
 async function renderComponent(options) {
   const { id, props, onInfo, onError } = options;
-
+  currentId = id;
+  props.id = id;
   const page = await browser.newPage();
 
+  if (canceled || canceledPosters.includes(id)) {
+    page.close();
+    browser.close();
+    onInfo('Canceled');
+  }
   page.on('error', error => {
     page.close();
     browser.close();
@@ -46,7 +56,7 @@ async function renderComponent(options) {
 
   const encodedProps = encodeURIComponent(JSON.stringify(props));
   const renderUrl = `${CLIENT_URL}/?props=${encodedProps}`;
-  console.log(renderUrl);
+  // console.log(renderUrl);
 
   await page.goto(renderUrl);
 
@@ -89,9 +99,12 @@ async function renderComponent(options) {
 
 async function renderComponentRetry(options) {
   const { onInfo, onError } = options;
-
+  canceled = false;
   for (let i = 0; i < MAX_RENDER_ATTEMPTS; i++) {
     /* eslint-disable no-await-in-loop */
+    if (canceled || canceledPosters.includes(options.id)) {
+      i = MAX_RENDER_ATTEMPTS;
+    }
     try {
       onInfo(i > 0 ? 'Retrying' : 'Rendering');
 
@@ -108,11 +121,25 @@ async function renderComponentRetry(options) {
       onInfo('Rendered successfully');
       return { success: true };
     } catch (error) {
+      canceledPosters.splice(canceledPosters.indexOf(options.id), 1);
       onError(error);
     }
   }
 
   return { success: false };
+}
+
+function cancelProcess(options) {
+  if (options.id === currentId) {
+    canceled = true;
+    if (browser) {
+      browser.close();
+      options.onInfo('Canceled');
+    }
+    return true;
+  }
+  canceledPosters.push(options.id);
+  return false;
 }
 
 /**
@@ -168,4 +195,5 @@ module.exports = {
   generate,
   concatenate,
   removeFiles,
+  cancelProcess,
 };
