@@ -56,7 +56,7 @@ async function renderComponent(options) {
 
   const encodedProps = encodeURIComponent(JSON.stringify(props));
   const renderUrl = `${CLIENT_URL}/?props=${encodedProps}`;
-  // console.log(renderUrl);
+  console.log(renderUrl);
 
   await page.goto(renderUrl);
 
