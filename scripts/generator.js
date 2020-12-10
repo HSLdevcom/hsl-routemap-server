@@ -1,10 +1,11 @@
 const fs = require('fs-extra');
 const path = require('path');
 const puppeteer = require('puppeteer');
+const moment = require('moment');
 const { spawn } = require('child_process');
 const { uploadPosterToCloud } = require('./cloudService');
 
-const { getPoster } = require('./store');
+const { getPoster, getBuilds, getBuild } = require('./store');
 
 const CLIENT_URL = 'http://localhost:5000';
 const RENDER_TIMEOUT = 24 * 60 * 60 * 1000;
@@ -12,8 +13,6 @@ const MAX_RENDER_ATTEMPTS = 3;
 const SCALE = 96 / 72;
 
 let browser = null;
-let currentId = null;
-
 let previous = Promise.resolve();
 
 const outputPath = path.join(__dirname, '..', 'output');
@@ -32,14 +31,13 @@ async function initialize() {
  */
 async function renderComponent(options) {
   const { id, props, onInfo, onError } = options;
-  currentId = id;
   props.id = id;
   const page = await browser.newPage();
 
   const poster = await getPoster({ id: options.id });
   const { status } = poster;
 
-  if (status === 'FAILED') {
+  if (status === 'FAILED' || !poster) {
     page.close();
     browser.close();
     onInfo('Canceled');
@@ -104,8 +102,10 @@ async function renderComponentRetry(options) {
   for (let i = 0; i < MAX_RENDER_ATTEMPTS; i++) {
     /* eslint-disable no-await-in-loop */
     const poster = await getPoster({ id: options.id });
-    if (poster.status === 'FAILED') {
+    if (poster.status === 'FAILED' || !poster) {
       i = MAX_RENDER_ATTEMPTS;
+      onInfo('Failed or canceled');
+      return { success: false };
     }
     try {
       onInfo(i > 0 ? 'Retrying' : 'Rendering');
@@ -130,8 +130,23 @@ async function renderComponentRetry(options) {
   return { success: false };
 }
 
-function cancelProcess(options) {
-  if (options.id === currentId) {
+async function getPosterInProgress(builds) {
+  const allPendingPosters = [];
+  const buildsWithPending = builds.filter(build => build.pending > 0);
+  for (let i = 0; i < buildsWithPending.length; i++) {
+    /* eslint-disable no-await-in-loop */
+    const build = await getBuild({ id: buildsWithPending[i].id });
+    const pendingPosters = build.posters.filter(poster => poster.status === 'PENDING');
+    allPendingPosters.push(...pendingPosters);
+  }
+  allPendingPosters.sort((a, b) => moment(b.createdAt) - moment(a.createdAt));
+  return allPendingPosters[0];
+}
+
+async function cancelProcess(options) {
+  const builds = await getBuilds();
+  const posterInProgress = await getPosterInProgress(builds);
+  if (posterInProgress && options.id === posterInProgress.id) {
     if (browser) {
       browser.close();
       options.onInfo('Canceled');

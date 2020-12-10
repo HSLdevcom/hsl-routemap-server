@@ -141,8 +141,9 @@ async function main() {
       id: item.id,
       onInfo,
     };
+
+    await generator.cancelProcess(options);
     const poster = await updatePoster({ id: item.id, status: 'FAILED' });
-    generator.cancelProcess(options);
 
     ctx.body = poster;
   });
