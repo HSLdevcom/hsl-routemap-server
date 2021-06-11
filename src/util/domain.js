@@ -5,7 +5,7 @@ import subwayIcon from 'icons/icon_subway.svg';
 import ferryIcon from 'icons/icon_ferry.svg';
 import trunkIcon from 'icons/icon_trunk.svg';
 
-const TRUNK_ROUTES = ['550', '560', '500', '510', '200', '570'];
+const TRUNK_ROUTES = ['550', '560', '500', '510', '200', '570', '20', '30', '40'];
 const RAIL_ROUTE_ID_REGEXP = /^300[12]/;
 const SUBWAY_ROUTE_ID_REGEXP = /^31/;
 
