@@ -47,6 +47,7 @@ async function generatePoster(buildId, props) {
     onInfo,
     onError,
   };
+
   generator
     .generate(options)
     .then(({ success }) => updatePoster({ id, status: success ? 'READY' : 'FAILED' }))
@@ -123,14 +124,34 @@ async function main() {
     const posters = [];
     for (let i = 0; i < props.length; i++) {
       // eslint-disable-next-line no-await-in-loop
-      posters.push(await generatePoster(buildId, props[i]));
+      const poster = await generatePoster(buildId, props[i]);
+      posters.push(poster);
     }
     ctx.body = posters;
   });
 
-  router.delete('/posters/:id', async ctx => {
-    const { id } = ctx.params;
-    const poster = await removePoster({ id });
+  router.post('/cancelPoster', async ctx => {
+    const { item } = ctx.request.body;
+    console.log('cancellll');
+    const onInfo = message => {
+      const date = new Date().toUTCString();
+      console.log(`${date} ${item.id}: ${message}`); // eslint-disable-line no-console
+    };
+    const options = {
+      id: item.id,
+      onInfo,
+    };
+
+    await generator.cancelProcess(options);
+    const poster = await updatePoster({ id: item.id, status: 'FAILED' });
+
+    ctx.body = poster;
+  });
+
+  router.post('/removePosters', async ctx => {
+    const { item } = ctx.request.body;
+    const poster = await removePoster({ id: item.id });
+
     ctx.body = poster;
   });
 
