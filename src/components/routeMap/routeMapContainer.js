@@ -53,6 +53,7 @@ const mapPositionMapper = mapProps(props => {
     latitude,
     configuration,
     date: props.configuration.date,
+    routeFilter: props.configuration.routeFilter,
     nearBuses: props.configuration.nearBuses,
   };
 });
@@ -155,10 +156,47 @@ const nearbyTerminals = gql`
 `;
 
 const terminalMapper = mapProps(props => {
-  const stations = props.data.stations.nodes;
-  const terminuses = props.data.terminus.nodes;
-  const intermediates = props.data.intermediates.nodes;
-  const stops = props.data.stopGroups.nodes;
+  const { data, routeFilter } = props;
+
+  // Whether to use filter or not
+  const filter = routeFilter && routeFilter.length > 0;
+
+  // No need to filter stations
+  const stations = data.stations.nodes;
+
+  // Remove terminuses not containing routes and remove additional route ids.
+  const terminuses = filter
+    ? data.terminus.nodes.reduce((value, terminus) => {
+        const filteredTerminus = {
+          ...terminus,
+          lines: terminus.lines.filter(l => routeFilter.includes(l)),
+        };
+        if (filteredTerminus.lines.length > 0) return value.concat(filteredTerminus);
+        return value;
+      }, [])
+    : data.terminus.nodes;
+
+  // Remove intermediate boxes not containing routes and remove additional route ids.
+  const intermediates = filter
+    ? data.intermediates.nodes.reduce((value, intermediate) => {
+        const filteredIntermediate = {
+          ...intermediate,
+          routes: intermediate.routes.filter(r => routeFilter.includes(r)),
+        };
+        if (filteredIntermediate.routes.length > 0) return value.concat(filteredIntermediate);
+        return value;
+      }, [])
+    : data.intermediates.nodes;
+
+  // Remove stops not relating to selected routes.
+  const stops = filter
+    ? data.stopGroups.nodes.reduce((value, stopGroup) => {
+        const routeSegments = flatMap(stopGroup.stops.nodes, node => node.routeSegments.nodes);
+        const routeIds = routeSegments.map(routeSegment => routeSegment.routeId);
+        if (routeIds.some(r => routeFilter.includes(r))) return value.concat(stopGroup);
+        return value;
+      }, [])
+    : data.stopGroups.nodes;
 
   const viewport = new PerspectiveMercatorViewport({
     longitude: props.mapOptions.center[0],
