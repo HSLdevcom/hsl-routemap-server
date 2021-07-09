@@ -308,7 +308,11 @@ const hoc = compose(
     lifecycle({
       componentDidMount() {
         renderQueue.add(this);
-        const alphaChannelMatrix = new Matrix(this.props.mapOptions, this.props.mapComponents);
+        const alphaChannelMatrix = new Matrix(
+          this.props.mapOptions,
+          this.props.mapComponents,
+          this.props.configuration.routeFilter,
+        );
         alphaChannelMatrix.initialize(alphaChannelByteArray => {
           this.props.onData(alphaChannelByteArray);
           renderQueue.remove(this);

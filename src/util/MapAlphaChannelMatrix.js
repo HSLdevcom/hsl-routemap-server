@@ -6,7 +6,7 @@ function getIfOccupied(byteArray, mapOptions) {
 }
 
 class Matrix {
-  constructor(mapOptions, mapComponents) {
+  constructor(mapOptions, mapComponents, routeFilter) {
     this.mapOptions = mapOptions;
     this.mapOptions.scale = 1;
     this.mapComponents = mapComponents;
@@ -16,6 +16,7 @@ class Matrix {
         ...mapComponents,
         base: { enabled: false },
       },
+      routeFilter,
     });
   }
 
