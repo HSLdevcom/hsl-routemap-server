@@ -8,10 +8,9 @@ import { fetchMap } from 'util/map';
 import promiseWrapper from 'util/promiseWrapper';
 import MapImage from './mapImage';
 
-const propsMapper = mapProps(({ options, components, date, routeFilter, extraLayers }) => {
+const propsMapper = mapProps(({ options, components, date, extraLayers }) => {
   const mapStyle = hslMapStyle.generateStyle({
     components,
-    routeFilter,
   });
 
   const sources = mapValues(mapStyle.sources, (value, key) => {
@@ -66,7 +65,6 @@ MapImageContainer.propTypes = {
     }),
   ).isRequired,
   date: PropTypes.string,
-  routeFilter: PropTypes.arrayOf(PropTypes.string).isRequired,
   extraLayers: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
