@@ -4607,9 +4607,10 @@ hpack.js@^2.1.6:
     readable-stream "^2.0.1"
     wbuf "^1.1.0"
 
-"hsl-map-style@github:hsldevcom/hsl-map-style#no-zone-symbols":
+"hsl-map-style@github:hsldevcom/hsl-map-style#hsl-routemap-server":
   version "1.0.0"
-  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/9401beba0d9dc140cc1f07eb9d5b0f7bcccfa469"
+  uid "353bb399d8d74ce7d37169f503d4ac56d0363b75"
+  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/353bb399d8d74ce7d37169f503d4ac56d0363b75"
   dependencies:
     lodash "^4.17.4"
 
@@ -7058,9 +7059,9 @@ path-key@^2.0.0, path-key@^2.0.1:
   integrity sha1-QRyttXTFoUDTpLGRDUDYDMn0C0A=
 
 path-parse@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.6.tgz#d62dbb5679405d72c4737ec58600e9ddcf06d24c"
-  integrity sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
+  integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
 path-root-regex@^0.1.0:
   version "0.1.2"
