@@ -49,9 +49,22 @@ Start a Jore PostGIS Docker container:
 docker run -d -p 5532:5432 --name hsl-jore-postgis -v jore-data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres -e AZURE_STORAGE_ACCOUNT= -e AZURE_STORAGE_KEY= -e AZURE_STORAGE_CONTAINER= hsl-jore-postgis
 ```
 
+Next, download jore-data into the database (not needed is you just use "Karttageneraattori"). You can use [jore-graphql-import](https://github.com/HSLdevcom/jore-graphql-import) for that, but probably the easiest way to get data is to generate and download a data dump if you have access to the servers.
+
+```
+ssh <server ip>
+docker exec -it <container name> pg_dump -c -U postgres postgres | gzip > joredata.gz
+exit
+
+scp <server ip>:joredata.gz .
+gunzip < joredata.gz | docker exec -i hsl-jore-postgis psql -U postgres
+```
+
+For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+
 #### 3.
 
-Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance.
 
 Start server:
 
