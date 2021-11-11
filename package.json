@@ -12,6 +12,7 @@
     "start:hot": "cross-env HMR=true node server",
     "server": "node --max-old-space-size=10000 -r dotenv/config scripts/server",
     "server:hot": "nodemon -r dotenv/config scripts/server",
+    "generator": "node scripts/generator",
     "codestyle": "prettier \"./**/*.{css,js}\" --write"
   },
   "lint-staged": {
@@ -82,6 +83,7 @@
     "apollo-cache-inmemory": "^1.1.1",
     "apollo-client": "^2.0.3",
     "apollo-link-http": "^1.2.0",
+    "bullmq": "^1.52.0",
     "classnames": "^2.2.5",
     "csv": "^2.0.0",
     "dotenv": "^8.0.0",
