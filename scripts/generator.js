@@ -9,6 +9,7 @@ const CLIENT_URL = 'http://localhost:5000';
 const RENDER_TIMEOUT = 24 * 60 * 60 * 1000;
 const MAX_RENDER_ATTEMPTS = 3;
 const SCALE = 96 / 72;
+const { REDIS_CONNECTION_STRING } = require('../constants');
 
 let browser = null;
 
@@ -146,10 +147,16 @@ async function generate(options) {
 }
 
 // Worker implementation
-const worker = new Worker('generator', async job => {
-  const { options } = job.data;
-  await generate(options);
-});
+const worker = new Worker(
+  'generator',
+  async job => {
+    const { options } = job.data;
+    await generate(options);
+  },
+  {
+    connection: REDIS_CONNECTION_STRING,
+  },
+);
 
 worker.on('completed', job => {
   console.log(`${job.id} has completed!`);

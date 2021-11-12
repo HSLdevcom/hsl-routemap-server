@@ -9,7 +9,6 @@ const authEndpoints = require('./auth/authEndpoints');
 const fileHandler = require('./fileHandler');
 const {
   migrate,
-  addEvent,
   getBuilds,
   getBuild,
   addBuild,
@@ -17,7 +16,6 @@ const {
   removeBuild,
   getPoster,
   addPoster,
-  updatePoster,
   removePoster,
   getConfig,
   setDateConfig,
@@ -27,6 +25,7 @@ const {
 const { generatePoints } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
 
+const { REDIS_CONNECTION_STRING } = '../constants';
 const PORT = 4000;
 
 async function generatePoster(buildId, props) {
@@ -37,7 +36,9 @@ async function generatePoster(buildId, props) {
     props,
   };
 
-  const queue = new Queue('generator');
+  const queue = new Queue('generator', {
+    connection: REDIS_CONNECTION_STRING,
+  });
 
   queue.add('generate', { options });
 
