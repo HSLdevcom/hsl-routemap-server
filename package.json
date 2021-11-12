@@ -12,7 +12,7 @@
     "start:hot": "cross-env HMR=true node server",
     "server": "node --max-old-space-size=10000 -r dotenv/config scripts/server",
     "server:hot": "nodemon -r dotenv/config scripts/server",
-    "generator": "node -r dotenv/config scripts/generator",
+    "worker": "node -r dotenv/config scripts/worker",
     "codestyle": "prettier \"./**/*.{css,js}\" --write"
   },
   "lint-staged": {

@@ -51,5 +51,6 @@ CMD \
   fc-cache -f -v && \
   yarn run forever start -c "yarn serve" ./ && \
   yarn run forever start -c "yarn server" ./ && \
+  yarn run forever start -c "yarn worker" ./ && \
   sleep 3 && \
   yarn run forever -f logs 1
