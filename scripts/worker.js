@@ -1,15 +1,16 @@
-const { Worker } = require('bullmq');
+const { Worker, QueueScheduler } = require('bullmq');
 const fs = require('fs-extra');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { uploadPosterToCloud } = require('./cloudService');
 const { addEvent, updatePoster } = require('./store');
 
+const { REDIS_CONNECTION_STRING } = require('../constants');
+
 const CLIENT_URL = 'http://localhost:5000';
 const RENDER_TIMEOUT = 24 * 60 * 60 * 1000;
 const MAX_RENDER_ATTEMPTS = 3;
 const SCALE = 96 / 72;
-const { REDIS_CONNECTION_STRING } = require('../constants');
 
 let browser = null;
 
@@ -146,6 +147,11 @@ async function generate(options) {
   updatePoster({ id, status: success ? 'READY' : 'FAILED' });
 }
 
+// Queue scheduler to restart stopped jobs.
+const queueScheduler = new QueueScheduler('generator', {
+  connection: REDIS_CONNECTION_STRING,
+});
+
 // Worker implementation
 const worker = new Worker(
   'generator',
@@ -158,10 +164,25 @@ const worker = new Worker(
   },
 );
 
+console.log('Worker ready for jobs!');
+
+worker.on('active', job => {
+  console.log(`Started to process ${job.id}`);
+});
+
 worker.on('completed', job => {
   console.log(`${job.id} has completed!`);
 });
 
 worker.on('failed', (job, err) => {
   console.log(`${job.id} has failed with ${err.message}`);
+});
+
+worker.on('drained', () => console.log('Job queue empty! Waiting for new jobs...'));
+
+process.on('SIGINT', () => {
+  console.log('Shutting down worker...');
+  worker.close(true);
+  queueScheduler.close();
+  process.exit(0);
 });

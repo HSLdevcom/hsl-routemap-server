@@ -25,8 +25,13 @@ const {
 const { generatePoints } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
 
-const { REDIS_CONNECTION_STRING } = '../constants';
+const { REDIS_CONNECTION_STRING } = require('../constants');
+
 const PORT = 4000;
+
+const queue = new Queue('generator', {
+  connection: REDIS_CONNECTION_STRING,
+});
 
 async function generatePoster(buildId, props) {
   const { id } = await addPoster({ buildId, props });
@@ -36,11 +41,7 @@ async function generatePoster(buildId, props) {
     props,
   };
 
-  const queue = new Queue('generator', {
-    connection: REDIS_CONNECTION_STRING,
-  });
-
-  queue.add('generate', { options });
+  queue.add('generate', { options }, { jobId: id });
 
   return { id };
 }
