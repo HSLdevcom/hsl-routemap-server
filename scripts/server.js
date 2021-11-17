@@ -21,7 +21,6 @@ const {
   getConfig,
   setDateConfig,
   setStatusConfig,
-  setUpdatedAtConfig,
 } = require('./store');
 const { generatePoints } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
@@ -178,7 +177,6 @@ async function main() {
       config = await setDateConfig(targetDate);
       await generatePoints(config.target_date)
         .then(async () => {
-          await setUpdatedAtConfig();
           await setStatusConfig('READY');
         })
         .catch(async () => {

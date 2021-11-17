@@ -78,7 +78,12 @@ const RouteMap = props => {
   return (
     <div className={styles.root}>
       <div className={styles.map} style={mapStyle}>
-        <MapImage options={props.mapOptions} components={props.mapComponents} date={props.date} />
+        <MapImage
+          options={props.mapOptions}
+          components={props.mapComponents}
+          date={props.date}
+          routeFilter={props.configuration.routeFilter}
+        />
       </div>
       <div className={styles.overlays}>
         <ItemContainer
