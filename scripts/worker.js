@@ -1,4 +1,5 @@
 const { Worker, QueueScheduler } = require('bullmq');
+const Redis = require('ioredis');
 const fs = require('fs-extra');
 const path = require('path');
 const puppeteer = require('puppeteer');
@@ -147,10 +148,13 @@ async function generate(options) {
   updatePoster({ id, status: success ? 'READY' : 'FAILED' });
 }
 
-// Queue scheduler to restart stopped jobs.
-const queueScheduler = new QueueScheduler('generator', {
-  connection: REDIS_CONNECTION_STRING,
+const connection = new Redis(REDIS_CONNECTION_STRING, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 });
+
+// Queue scheduler to restart stopped jobs.
+const queueScheduler = new QueueScheduler('generator', { connection });
 
 // Worker implementation
 const worker = new Worker(
@@ -159,9 +163,7 @@ const worker = new Worker(
     const { options } = job.data;
     await generate(options);
   },
-  {
-    connection: REDIS_CONNECTION_STRING,
-  },
+  { connection },
 );
 
 console.log('Worker ready for jobs!');

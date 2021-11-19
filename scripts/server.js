@@ -5,6 +5,7 @@ const cors = require('@koa/cors');
 const jsonBody = require('koa-json-body');
 const { get } = require('lodash');
 const { Queue } = require('bullmq');
+const Redis = require('ioredis');
 const authEndpoints = require('./auth/authEndpoints');
 const fileHandler = require('./fileHandler');
 const {
@@ -29,9 +30,11 @@ const { REDIS_CONNECTION_STRING } = require('../constants');
 
 const PORT = 4000;
 
-const queue = new Queue('generator', {
-  connection: REDIS_CONNECTION_STRING,
+const connection = new Redis(REDIS_CONNECTION_STRING, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 });
+const queue = new Queue('generator', { connection });
 
 async function generatePoster(buildId, props) {
   const { id } = await addPoster({ buildId, props });

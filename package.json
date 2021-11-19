@@ -93,6 +93,7 @@
     "graphql-tag": "^2.5.0",
     "hsl-map-style": "github:hsldevcom/hsl-map-style#hsl-routemap-server",
     "iconv-lite": "^0.4.19",
+    "ioredis": "^4.28.0",
     "knex": "^0.14.0",
     "koa": "^2.4.1",
     "koa-json-body": "^5.3.0",
