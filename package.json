@@ -7,7 +7,7 @@
     "clean": "rimraf dist",
     "bundle": "webpack --config webpack.config.js",
     "build": "yarn run clean && yarn run bundle",
-    "serve": "serve dist",
+    "serve": "serve -p 5000",
     "start": "node --max-old-space-size=10000 server",
     "start:hot": "cross-env HMR=true node server",
     "server": "node --max-old-space-size=10000 -r dotenv/config scripts/server",

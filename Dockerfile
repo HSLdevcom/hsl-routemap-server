@@ -49,7 +49,7 @@ EXPOSE 4000
 CMD \
   ./fonts.sh && \
   fc-cache -f -v && \
-  yarn run forever start -c "yarn serve" ./ && \
+  yarn run forever start -c "yarn serve" dist/ && \
   yarn run forever start -c "yarn server" ./ && \
   yarn run forever start -c "yarn worker" ./ && \
   sleep 3 && \
