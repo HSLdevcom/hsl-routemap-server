@@ -1,9 +1,13 @@
+const { Worker, QueueScheduler } = require('bullmq');
+const Redis = require('ioredis');
 const fs = require('fs-extra');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const moment = require('moment');
-const { spawn } = require('child_process');
+// const moment = require('moment');
 const { uploadPosterToCloud } = require('./cloudService');
+const { addEvent, updatePoster } = require('./store');
+
+const { REDIS_CONNECTION_STRING } = require('../constants');
 
 const { getPoster, getBuilds, getBuild } = require('./store');
 
@@ -13,7 +17,6 @@ const MAX_RENDER_ATTEMPTS = 3;
 const SCALE = 96 / 72;
 
 let browser = null;
-let previous = Promise.resolve();
 
 const outputPath = path.join(__dirname, '..', 'output');
 const pdfPath = id => path.join(outputPath, `${id}.pdf`);
@@ -130,84 +133,101 @@ async function renderComponentRetry(options) {
   return { success: false };
 }
 
-async function getPosterInProgress(builds) {
-  const allPendingPosters = [];
-  const buildsWithPending = builds.filter(build => build.pending > 0);
-  for (let i = 0; i < buildsWithPending.length; i++) {
-    /* eslint-disable no-await-in-loop */
-    const build = await getBuild({ id: buildsWithPending[i].id });
-    const pendingPosters = build.posters.filter(poster => poster.status === 'PENDING');
-    allPendingPosters.push(...pendingPosters);
-  }
-  allPendingPosters.sort((a, b) => moment(b.createdAt) - moment(a.createdAt));
-  return allPendingPosters[0];
-}
+// TODO: implement cancellation so that it works with bullmq
+// async function getPosterInProgress(builds) {
+//   const allPendingPosters = [];
+//   const buildsWithPending = builds.filter(build => build.pending > 0);
+//   for (let i = 0; i < buildsWithPending.length; i++) {
+//     /* eslint-disable no-await-in-loop */
+//     const build = await getBuild({ id: buildsWithPending[i].id });
+//     const pendingPosters = build.posters.filter(poster => poster.status === 'PENDING');
+//     allPendingPosters.push(...pendingPosters);
+//   }
+//   allPendingPosters.sort((a, b) => moment(b.createdAt) - moment(a.createdAt));
+//   return allPendingPosters[0];
+// }
 
-async function cancelProcess(options) {
-  const builds = await getBuilds();
-  const posterInProgress = await getPosterInProgress(builds);
-  if (posterInProgress && options.id === posterInProgress.id) {
-    if (browser) {
-      browser.close();
-      options.onInfo('Canceled');
-    }
-    return true;
-  }
-  return false;
-}
+// async function cancelProcess(options) {
+//   const builds = await getBuilds();
+//   const posterInProgress = await getPosterInProgress(builds);
+//   if (posterInProgress && options.id === posterInProgress.id) {
+//     if (browser) {
+//       browser.close();
+//       options.onInfo('Canceled');
+//     }
+//     return true;
+//   }
+//   return false;
+// }
 
 /**
  * Adds component to render queue
  * @param {Object} options
  * @param {string} options.id - Unique id
  * @param {Object} options.props - Props to pass to component
- * @param {function} options.onInfo - Callback (string)
- * @param {function} options.onError - Callback (Error)
- * @returns {Promise} - Always resolves with { success }
  */
-function generate(options) {
-  previous = previous.then(() => renderComponentRetry(options));
-  return previous;
-}
 
-/**
- * Concatenates posters to a multi-page PDF
- * @param {Object} options
- * @param {string[]} options.ids - Ids to concatate
- * @returns {Readable} - PDF stream
- */
-function concatenate(ids) {
-  const filenames = ids.map(id => pdfPath(id));
-  const pdftk = spawn('pdftk', [...filenames, 'cat', 'output', '-']);
-  pdftk.stderr.on('data', data => {
-    pdftk.stdout.emit('error', new Error(data.toString()));
-  });
-  return pdftk.stdout;
-}
+async function generate(options) {
+  const { id } = options;
 
-async function removeFiles(ids) {
-  const filenames = ids.map(id => pdfPath(id));
-  const removePromises = [];
+  const onInfo = message => {
+    const date = new Date().toUTCString();
+    console.log(`${date} ${id}: ${message}`); // eslint-disable-line no-console
+    addEvent({ posterId: id, type: 'INFO', message });
+  };
 
-  filenames.forEach(filename => {
-    const createPromise = async () => {
-      try {
-        await fs.remove(filename);
-      } catch (err) {
-        console.log(`Pdf ${filename} removal unsuccessful.`);
-        console.error(err);
-      }
-    };
+  const onError = error => {
+    const date = new Date().toUTCString();
+    console.error(`${date} ${id}: ${error.message} ${error.stack}`); // eslint-disable-line no-console
+    addEvent({ posterId: id, type: 'ERROR', message: error.message });
+  };
 
-    removePromises.push(createPromise());
+  const { success } = await renderComponentRetry({
+    ...options,
+    onInfo,
+    onError,
   });
 
-  await Promise.all(removePromises);
+  updatePoster({ id, status: success ? 'READY' : 'FAILED' });
 }
 
-module.exports = {
-  generate,
-  concatenate,
-  removeFiles,
-  cancelProcess,
-};
+const connection = new Redis(REDIS_CONNECTION_STRING, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
+
+// Queue scheduler to restart stopped jobs.
+const queueScheduler = new QueueScheduler('generator', { connection });
+
+// Worker implementation
+const worker = new Worker(
+  'generator',
+  async job => {
+    const { options } = job.data;
+    await generate(options);
+  },
+  { connection },
+);
+
+console.log('Worker ready for jobs!');
+
+worker.on('active', job => {
+  console.log(`Started to process ${job.id}`);
+});
+
+worker.on('completed', job => {
+  console.log(`${job.id} has completed!`);
+});
+
+worker.on('failed', (job, err) => {
+  console.log(`${job.id} has failed with ${err.message}`);
+});
+
+worker.on('drained', () => console.log('Job queue empty! Waiting for new jobs...'));
+
+process.on('SIGINT', () => {
+  console.log('Shutting down worker...');
+  worker.close(true);
+  queueScheduler.close();
+  process.exit(0);
+});

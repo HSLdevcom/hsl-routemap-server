@@ -33,7 +33,7 @@ http://localhost:5000/?props={"mapOptions":{"zoom":12.774952540009707,"pitch":0,
 
 Server and REST API for printing components to PDF files and managing their metadata in a Postgres database.
 
-#### 1.
+#### 1. Postgres (backend)
 
 Start a Postgres Docker container for routemap:
 
@@ -41,7 +41,7 @@ Start a Postgres Docker container for routemap:
 docker run -d -p 5432:5432 --name routemap-postgres -e POSTGRES_PASSWORD=postgres postgres
 ```
 
-#### 2.
+#### 2. Jore PostGIS
 
 Start a Jore PostGIS Docker container:
 
@@ -49,23 +49,56 @@ Start a Jore PostGIS Docker container:
 docker run -d -p 5532:5432 --name hsl-jore-postgis -v jore-data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres -e AZURE_STORAGE_ACCOUNT= -e AZURE_STORAGE_KEY= -e AZURE_STORAGE_CONTAINER= hsl-jore-postgis
 ```
 
-#### 3.
+Next, download jore-data into the database (not needed is you just use "Karttageneraattori"). You can use [jore-graphql-import](https://github.com/HSLdevcom/jore-graphql-import) for that, but probably the easiest way to get data is to generate and download a data dump if you have access to the servers.
 
-Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance. For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+```
+ssh <server ip>
+docker exec -it <container name> pg_dump -c -U postgres postgres | gzip > joredata.gz
+exit
 
-Start server:
+scp <server ip>:joredata.gz .
+gunzip < joredata.gz | docker exec -i hsl-jore-postgis psql -U postgres
+```
 
+For more information running local JORE PostGIS see [hsl-jore-postgis](https://github.com/HSLdevcom/hsl-jore-postgis).
+
+#### 3. Redis
+
+Start Redis
+```
+docker run --name redis --rm -p 6379:6379 -d redis'
+```
+
+For the default configuration, place the following to `.env`:
+```
+REDIS_CONNECTION_STRING=redis://localhost:6379
+```
+
+Note! A password should be used in production! Use `redis://:<password>@localhost:6379` notation with the authentication.
+
+#### 4. Backend and worker 
+
+Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance.
+
+Start backend server:
 ```
 PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres PG_JORE_CONNECTION_STRING=postgres://postgres:postgres@localhost:5532/postgres yarn server
 ```
 
-#### 4.
+Start generator worker (you can start multiple workers if you want)
+```
+PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres yarn worker
+```
+
+#### 5. Start UI and generate "Poikkileikkaus"
+
+See [hsl-map-generator-ui](https://github.com/HSLdevcom/hsl-map-generator-ui) for UI.
 
 As soon as it is started, run the "Päivitä" function of the linjakarttageneraattori poikkileikkauspäivä to generate an actual poikkileikkauspäivä. If the update function is disabled try running the sql script mentioned below.
 
 ### Running in Docker
 
-Create a Postgres database container like in step [1.](1.)
+Follow the steps 1.-3. as previous.
 
 IMPORTANT:
 

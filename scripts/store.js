@@ -181,6 +181,23 @@ async function setDateConfig(date) {
   return getConfig();
 }
 
+async function setUpdatedAtConfig() {
+  const oldConfig = await getConfig();
+  if (oldConfig) {
+    await knex('routepath_import_config')
+      .where({ name: 'default' })
+      .update({
+        updated_at: new Date().toISOString(),
+      });
+  } else {
+    await knex('routepath_import_config').insert({
+      name: 'default',
+      updated_at: new Date().toISOString(),
+    });
+  }
+  return getConfig();
+}
+
 async function setStatusConfig(status) {
   const oldConfig = await getConfig();
   if (oldConfig) {
@@ -207,5 +224,6 @@ module.exports = {
   addEvent,
   setDateConfig,
   setStatusConfig,
+  setUpdatedAtConfig,
   getConfig,
 };
