@@ -90,7 +90,7 @@
     "fs-extra": "^8.1.0",
     "graphql": "^0.11.7",
     "graphql-tag": "^2.5.0",
-    "hsl-map-style": "github:hsldevcom/hsl-map-style#hsl-routemap-server",
+    "hsl-map-style": "hsldevcom/hsl-map-style#development",
     "iconv-lite": "^0.4.19",
     "ioredis": "^4.28.0",
     "knex": "^0.14.0",
