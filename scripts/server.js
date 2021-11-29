@@ -128,21 +128,14 @@ async function main() {
 
   router.post('/cancelPoster', async ctx => {
     const { item } = ctx.request.body;
-    console.log('cancellll');
-    const onInfo = message => {
-      const date = new Date().toUTCString();
-      console.log(`${date} ${item.id}: ${message}`); // eslint-disable-line no-console
-    };
-    const options = {
-      id: item.id,
-      onInfo,
-    };
+    const jobId = item.id;
 
-    // TODO: send cancel signal
-    // await generator.cancelProcess(options);
-
-    cancelSignalRedis.publish('cancel', item.id);
-    const poster = await updatePoster({ id: item.id, status: 'FAILED' });
+    const poster = await updatePoster({ id: jobId, status: 'FAILED' });
+    const success = await queue.remove(jobId);
+    if (!success) {
+      // The job is already being processed. Terminate the worker operation.
+      cancelSignalRedis.publish('cancel', jobId);
+    }
 
     ctx.body = poster;
   });
