@@ -31,11 +31,13 @@ const { REDIS_CONNECTION_STRING } = require('../constants');
 
 const PORT = 4000;
 
-const connection = new Redis(REDIS_CONNECTION_STRING, {
+const bullRedisConnection = new Redis(REDIS_CONNECTION_STRING, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 });
-const queue = new Queue('generator', { connection });
+const queue = new Queue('generator', { bullRedisConnection });
+
+const cancelSignalRedis = new Redis(REDIS_CONNECTION_STRING); // New connection to make sure that pub/sub will work correctly.
 
 async function generatePoster(buildId, props) {
   const { id } = await addPoster({ buildId, props });
@@ -139,6 +141,7 @@ async function main() {
     // TODO: send cancel signal
     // await generator.cancelProcess(options);
 
+    cancelSignalRedis.publish('cancel', item.id);
     const poster = await updatePoster({ id: item.id, status: 'FAILED' });
 
     ctx.body = poster;

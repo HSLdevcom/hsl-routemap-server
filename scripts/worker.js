@@ -3,13 +3,10 @@ const Redis = require('ioredis');
 const fs = require('fs-extra');
 const path = require('path');
 const puppeteer = require('puppeteer');
-// const moment = require('moment');
 const { uploadPosterToCloud } = require('./cloudService');
-const { addEvent, updatePoster } = require('./store');
+const { addEvent, getPoster, updatePoster } = require('./store');
 
 const { REDIS_CONNECTION_STRING } = require('../constants');
-
-const { getPoster, getBuilds, getBuild } = require('./store');
 
 const CLIENT_URL = 'http://localhost:5000';
 const RENDER_TIMEOUT = 24 * 60 * 60 * 1000;
@@ -17,6 +14,7 @@ const MAX_RENDER_ATTEMPTS = 3;
 const SCALE = 96 / 72;
 
 let browser = null;
+let currentJob = null;
 
 const outputPath = path.join(__dirname, '..', 'output');
 const pdfPath = id => path.join(outputPath, `${id}.pdf`);
@@ -37,14 +35,6 @@ async function renderComponent(options) {
   props.id = id;
   const page = await browser.newPage();
 
-  const poster = await getPoster({ id: options.id });
-  const { status } = poster;
-
-  if (status === 'FAILED' || !poster) {
-    page.close();
-    browser.close();
-    onInfo('Canceled');
-  }
   page.on('error', error => {
     page.close();
     browser.close();
@@ -104,9 +94,10 @@ async function renderComponentRetry(options) {
   const { onInfo, onError } = options;
   for (let i = 0; i < MAX_RENDER_ATTEMPTS; i++) {
     /* eslint-disable no-await-in-loop */
+
+    // Check if the job was manually cancelled. Do not restart the rendering process.
     const poster = await getPoster({ id: options.id });
     if (poster.status === 'FAILED' || !poster) {
-      i = MAX_RENDER_ATTEMPTS;
       onInfo('Failed or canceled');
       return { success: false };
     }
@@ -133,33 +124,6 @@ async function renderComponentRetry(options) {
   return { success: false };
 }
 
-// TODO: implement cancellation so that it works with bullmq
-// async function getPosterInProgress(builds) {
-//   const allPendingPosters = [];
-//   const buildsWithPending = builds.filter(build => build.pending > 0);
-//   for (let i = 0; i < buildsWithPending.length; i++) {
-//     /* eslint-disable no-await-in-loop */
-//     const build = await getBuild({ id: buildsWithPending[i].id });
-//     const pendingPosters = build.posters.filter(poster => poster.status === 'PENDING');
-//     allPendingPosters.push(...pendingPosters);
-//   }
-//   allPendingPosters.sort((a, b) => moment(b.createdAt) - moment(a.createdAt));
-//   return allPendingPosters[0];
-// }
-
-// async function cancelProcess(options) {
-//   const builds = await getBuilds();
-//   const posterInProgress = await getPosterInProgress(builds);
-//   if (posterInProgress && options.id === posterInProgress.id) {
-//     if (browser) {
-//       browser.close();
-//       options.onInfo('Canceled');
-//     }
-//     return true;
-//   }
-//   return false;
-// }
-
 /**
  * Adds component to render queue
  * @param {Object} options
@@ -169,6 +133,7 @@ async function renderComponentRetry(options) {
 
 async function generate(options) {
   const { id } = options;
+  currentJob = id;
 
   const onInfo = message => {
     const date = new Date().toUTCString();
@@ -189,15 +154,18 @@ async function generate(options) {
   });
 
   updatePoster({ id, status: success ? 'READY' : 'FAILED' });
+  currentJob = null;
 }
 
-const connection = new Redis(REDIS_CONNECTION_STRING, {
+const bullRedisConnection = new Redis(REDIS_CONNECTION_STRING, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 });
 
 // Queue scheduler to restart stopped jobs.
-const queueScheduler = new QueueScheduler('generator', { connection });
+// TODO: If multiple services, move to separeted microservice! Only few instances maximum needed for the cluster.
+// Not needed for local dev environment.
+const queueScheduler = new QueueScheduler('generator', { bullRedisConnection });
 
 // Worker implementation
 const worker = new Worker(
@@ -206,7 +174,7 @@ const worker = new Worker(
     const { options } = job.data;
     await generate(options);
   },
-  { connection },
+  { bullRedisConnection },
 );
 
 console.log('Worker ready for jobs!');
@@ -225,9 +193,35 @@ worker.on('failed', (job, err) => {
 
 worker.on('drained', () => console.log('Job queue empty! Waiting for new jobs...'));
 
+// While bullmq doesn't support cancelling the jobs, this helper will do it by closing the browser.
+const cancelSignalRedis = new Redis(REDIS_CONNECTION_STRING);
+
+cancelSignalRedis.subscribe('cancel', err => {
+  if (err) {
+    console.error('Failed to start listening to cancellation signals: %s', err.message);
+  } else {
+    console.log('Listening to cancellation signals.');
+  }
+});
+
+cancelSignalRedis.on('message', (channel, message) => {
+  if (channel === 'cancel') {
+    console.log(`Received cancellation signal for id ${message}`);
+    if (message === currentJob) {
+      console.log('The job was in progress on this worker! Terminating it...');
+      if (browser) {
+        browser.close();
+      }
+    }
+  }
+});
+
+// Make sure all the connections will be removed.
 process.on('SIGINT', () => {
   console.log('Shutting down worker...');
   worker.close(true);
   queueScheduler.close();
+  cancelSignalRedis.disconnect();
+  cancelSignalRedis.quit();
   process.exit(0);
 });
