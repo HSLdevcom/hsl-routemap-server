@@ -66,7 +66,7 @@ For more information running local JORE PostGIS see [hsl-jore-postgis](https://g
 
 Start Redis
 ```
-docker run --name redis --rm -p 6379:6379 -d redis'
+docker run --name redis --rm -p 6379:6379 -d redis
 ```
 
 For the default configuration, place the following to `.env`:
@@ -78,7 +78,7 @@ Note! A password should be used in production! Use `redis://:<password>@localhos
 
 #### 4. Backend and worker 
 
-Replace `PG_JORE_CONNETION_STRING` value with your JORE PostGIS instance.
+Replace `PG_JORE_CONNECTION_STRING` value with your JORE PostGIS instance.
 
 Start backend server:
 ```
