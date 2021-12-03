@@ -17,6 +17,7 @@ const {
   removeBuild,
   getPoster,
   addPoster,
+  updatePoster,
   removePoster,
   getConfig,
   setDateConfig,
@@ -30,11 +31,13 @@ const { REDIS_CONNECTION_STRING } = require('../constants');
 
 const PORT = 4000;
 
-const connection = new Redis(REDIS_CONNECTION_STRING, {
+const bullRedisConnection = new Redis(REDIS_CONNECTION_STRING, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 });
-const queue = new Queue('generator', { connection });
+const queue = new Queue('generator', { bullRedisConnection });
+
+const cancelSignalRedis = new Redis(REDIS_CONNECTION_STRING); // New connection to make sure that pub/sub will work correctly.
 
 async function generatePoster(buildId, props) {
   const { id } = await addPoster({ buildId, props });
@@ -117,14 +120,30 @@ async function main() {
     const posters = [];
     for (let i = 0; i < props.length; i++) {
       // eslint-disable-next-line no-await-in-loop
-      posters.push(await generatePoster(buildId, props[i]));
+      const poster = await generatePoster(buildId, props[i]);
+      posters.push(poster);
     }
     ctx.body = posters;
   });
 
-  router.delete('/posters/:id', async ctx => {
-    const { id } = ctx.params;
-    const poster = await removePoster({ id });
+  router.post('/cancelPoster', async ctx => {
+    const { item } = ctx.request.body;
+    const jobId = item.id;
+
+    const poster = await updatePoster({ id: jobId, status: 'FAILED' });
+    const success = await queue.remove(jobId);
+    if (!success) {
+      // The job is already being processed. Terminate the worker operation.
+      cancelSignalRedis.publish('cancel', jobId);
+    }
+
+    ctx.body = poster;
+  });
+
+  router.post('/removePosters', async ctx => {
+    const { item } = ctx.request.body;
+    const poster = await removePoster({ id: item.id });
+
     ctx.body = poster;
   });
 
