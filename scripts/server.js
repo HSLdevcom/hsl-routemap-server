@@ -35,7 +35,7 @@ const bullRedisConnection = new Redis(REDIS_CONNECTION_STRING, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 });
-const queue = new Queue('generator', { bullRedisConnection });
+const queue = new Queue('generator', { connection: bullRedisConnection });
 
 const cancelSignalRedis = new Redis(REDIS_CONNECTION_STRING); // New connection to make sure that pub/sub will work correctly.
 

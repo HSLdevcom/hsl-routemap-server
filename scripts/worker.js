@@ -165,7 +165,7 @@ const bullRedisConnection = new Redis(REDIS_CONNECTION_STRING, {
 // Queue scheduler to restart stopped jobs.
 // TODO: If multiple services, move to separeted microservice! Only few instances maximum needed for the cluster.
 // Not needed for local dev environment.
-const queueScheduler = new QueueScheduler('generator', { bullRedisConnection });
+const queueScheduler = new QueueScheduler('generator', { connection: bullRedisConnection });
 
 // Worker implementation
 const worker = new Worker(
@@ -174,7 +174,7 @@ const worker = new Worker(
     const { options } = job.data;
     await generate(options);
   },
-  { bullRedisConnection },
+  { connection: bullRedisConnection },
 );
 
 console.log('Worker ready for jobs!');
