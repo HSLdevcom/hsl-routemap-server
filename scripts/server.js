@@ -4,11 +4,12 @@ const session = require('koa-session');
 const cors = require('@koa/cors');
 const jsonBody = require('koa-json-body');
 const { get } = require('lodash');
+const { Queue } = require('bullmq');
+const Redis = require('ioredis');
 const authEndpoints = require('./auth/authEndpoints');
-const generator = require('./generator');
+const fileHandler = require('./fileHandler');
 const {
   migrate,
-  addEvent,
   getBuilds,
   getBuild,
   addBuild,
@@ -16,7 +17,6 @@ const {
   removeBuild,
   getPoster,
   addPoster,
-  updatePoster,
   removePoster,
   getConfig,
   setDateConfig,
@@ -26,32 +26,25 @@ const {
 const { generatePoints } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
 
+const { REDIS_CONNECTION_STRING } = require('../constants');
+
 const PORT = 4000;
+
+const connection = new Redis(REDIS_CONNECTION_STRING, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
+const queue = new Queue('generator', { connection });
 
 async function generatePoster(buildId, props) {
   const { id } = await addPoster({ buildId, props });
 
-  const onInfo = message => {
-    const date = new Date().toUTCString();
-    console.log(`${date} ${id}: ${message}`); // eslint-disable-line no-console
-    addEvent({ posterId: id, type: 'INFO', message });
-  };
-  const onError = error => {
-    const date = new Date().toUTCString();
-    console.error(`${date} ${id}: ${error.message} ${error.stack}`); // eslint-disable-line no-console
-    addEvent({ posterId: id, type: 'ERROR', message: error.message });
-  };
-
   const options = {
     id,
     props,
-    onInfo,
-    onError,
   };
-  generator
-    .generate(options)
-    .then(({ success }) => updatePoster({ id, status: success ? 'READY' : 'FAILED' }))
-    .catch(error => console.error(error)); // eslint-disable-line no-console
+
+  queue.add('generate', { options }, { jobId: id });
 
   return { id };
 }
@@ -140,14 +133,14 @@ async function main() {
     const { title, posters } = await getBuild({ id });
     const posterIds = posters.filter(poster => poster.status === 'READY').map(poster => poster.id);
     await downloadPostersFromCloud(posterIds);
-    const content = await generator.concatenate(posterIds);
+    const content = await fileHandler.concatenate(posterIds);
 
     ctx.type = 'application/pdf';
     ctx.set('Content-Disposition', `attachment; filename="${title}-${id}.pdf"`);
     ctx.body = content;
 
     content.on('close', () => {
-      generator.removeFiles([id]);
+      fileHandler.removeFiles([id]);
     });
   });
 
@@ -156,14 +149,14 @@ async function main() {
     const poster = await getPoster({ id });
     const name = get(poster, 'props.configuration.name');
     await downloadPostersFromCloud([id]);
-    const content = await generator.concatenate([id]);
+    const content = await fileHandler.concatenate([id]);
 
     ctx.type = 'application/pdf';
     ctx.set('Content-Disposition', `attachment; filename="${name}.pdf"`);
     ctx.body = content;
 
     content.on('close', () => {
-      generator.removeFiles([id]);
+      fileHandler.removeFiles([id]);
     });
   });
 
