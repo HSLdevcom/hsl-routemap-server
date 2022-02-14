@@ -4613,7 +4613,7 @@ hpack.js@^2.1.6:
 
 "hsl-map-style@github:hsldevcom/hsl-map-style#hsl-routemap-server":
   version "1.0.0"
-  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/62acb76067fa5f914ec5a409a266692018d5850b"
+  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/5dac170d8d0f1621f78a8f1a92ff75096c7fd47a"
   dependencies:
     lodash "^4.17.4"
 
