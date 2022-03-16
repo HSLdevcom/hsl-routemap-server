@@ -139,6 +139,11 @@ const nearbyTerminals = gql`
                 routeId
                 hasRegularDayDepartures(date: $date)
                 pickupDropoffType
+                line {
+                  nodes {
+                    trunkRoute
+                  }
+                }
                 route {
                   nodes {
                     destinationFi
@@ -205,7 +210,6 @@ const terminalMapper = mapProps(props => {
     width: props.width,
     height: props.height,
   });
-
   const projectedStations = stations.map(stop => {
     const [x, y] = viewport.project([parseFloat(stop.lon), parseFloat(stop.lat)]);
 
@@ -234,6 +238,7 @@ const terminalMapper = mapProps(props => {
               routeId: trimRouteId(routeSegment.routeId),
               destinationFi: routeSegment.route.nodes[0].destinationFi,
               destinationSe: routeSegment.route.nodes[0].destinationSe,
+              trunkRoute: routeSegment.line.nodes && routeSegment.line.nodes[0].trunkRoute === '1',
               mode: routeSegment.route.nodes[0].mode,
             })),
         ).sort(routeCompare),
