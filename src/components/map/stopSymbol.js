@@ -1,15 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { isTrunkRoute, colorsByMode } from 'util/domain';
+import { colorsByMode } from 'util/domain';
 
 const strokeWidth = 1;
 
 const StopSymbol = props => {
   const modes = [...new Set(props.routes.map(({ mode }) => mode))];
   const colors = [];
-
-  if (props.routes.some(({ routeId }) => isTrunkRoute(routeId))) {
+  if (props.routes.some(route => route.trunkRoute)) {
     colors.push(colorsByMode.TRUNK);
   }
   if (modes.includes('TRAM')) {
@@ -24,7 +23,7 @@ const StopSymbol = props => {
   if (modes.includes('FERRY')) {
     colors.push(colorsByMode.FERRY);
   }
-  if (modes.includes('BUS') && props.routes.some(({ routeId }) => !isTrunkRoute(routeId))) {
+  if (modes.includes('BUS') && props.routes.some(route => !route.trunkRoute)) {
     colors.push(colorsByMode.BUS);
   }
 

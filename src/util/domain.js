@@ -43,15 +43,6 @@ function isSubwayRoute(routeId) {
 }
 
 /**
- * Returns whether a route id is belongs to a trunk route
- * @param {String} routeId - Route id
- * @returns {String}
- */
-function isTrunkRoute(routeId) {
-  return TRUNK_ROUTES.includes(routeId);
-}
-
-/**
  * Returns route id without area code or leading zeros
  * @param {String} routeId - Route id
  * @returns {String}
@@ -112,14 +103,14 @@ const iconsByMode = {
 };
 
 function getColor(route) {
-  if (isTrunkRoute(route.routeId)) {
+  if (route.trunkRoute) {
     return colorsByMode.TRUNK;
   }
   return colorsByMode[route.mode];
 }
 
 function getIcon(route) {
-  if (isTrunkRoute(route.routeId)) {
+  if (route.trunkRoute) {
     return iconsByMode.TRUNK;
   }
   return iconsByMode[route.mode];
@@ -129,7 +120,6 @@ export {
   isNumberVariant,
   isRailRoute,
   isSubwayRoute,
-  isTrunkRoute,
   trimRouteId,
   isDropOffOnly,
   colorsByMode,
