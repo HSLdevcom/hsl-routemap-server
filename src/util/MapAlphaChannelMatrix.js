@@ -15,6 +15,7 @@ class Matrix {
       components: {
         ...mapComponents,
         base: { enabled: false },
+        routes_with_departures_only: { enabled: false },
       },
       routeFilter,
     });

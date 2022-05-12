@@ -10,7 +10,10 @@ import MapImage from './mapImage';
 
 const propsMapper = mapProps(({ options, components, date, routeFilter, extraLayers }) => {
   const mapStyle = hslMapStyle.generateStyle({
-    components,
+    components: {
+      ...components,
+      routes_with_departures_only: { enabled: false }, // To show routes also in the future.
+    },
     routeFilter,
   });
 
