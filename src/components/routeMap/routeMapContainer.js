@@ -238,7 +238,10 @@ const terminalMapper = mapProps(props => {
               routeId: trimRouteId(routeSegment.routeId),
               destinationFi: routeSegment.route.nodes[0].destinationFi,
               destinationSe: routeSegment.route.nodes[0].destinationSe,
-              trunkRoute: routeSegment.line.nodes && routeSegment.line.nodes[0].trunkRoute === '1',
+              trunkRoute:
+                routeSegment.line.nodes &&
+                routeSegment.line.nodes.length > 0 &&
+                routeSegment.line.nodes[0].trunkRoute === '1',
               mode: routeSegment.route.nodes[0].mode,
             })),
         ).sort(routeCompare),
