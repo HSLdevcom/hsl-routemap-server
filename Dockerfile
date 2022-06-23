@@ -21,15 +21,6 @@ ENV WORK /opt/publisher
 RUN mkdir -p ${WORK}
 WORKDIR ${WORK}
 
-# Add privileges for puppeteer user
-RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-  && mkdir -p /home/pptruser/Downloads \
-  && chown -R pptruser:pptruser /home/pptruser \
-  && chown -R pptruser:pptruser ${WORK}
-
-# Run user as non privileged.
-USER pptruser
-
 # Install app dependencies
 COPY yarn.lock package.json ${WORK}/
 RUN yarn && yarn cache clean
