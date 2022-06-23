@@ -64,7 +64,7 @@ async function renderComponent(options) {
     throw new Error(error);
   }
 
-  await page.emulateMediaType('screen');
+  await page.emulateMedia('screen');
 
   let printOptions = {};
   if (props.printTimetablesAsA4) {
