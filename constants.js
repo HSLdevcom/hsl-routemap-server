@@ -9,12 +9,12 @@ const SECRETS_PATH = '/run/secrets/';
 const secrets = (fs.existsSync(SECRETS_PATH) && fs.readdirSync(SECRETS_PATH)) || [];
 
 const secretsEnv = mapValues(process.env, (value, key) => {
-  const matchingSecrets = secrets.filter(secretFile => secretFile.startsWith(key));
+  const matchingSecrets = secrets.filter((secretFile) => secretFile.startsWith(key));
 
   const currentSecret =
     orderBy(
       matchingSecrets,
-      secret => {
+      (secret) => {
         const secretVersion = parseInt(secret[secret.length - 1], 10);
         return isNaN(secretVersion) ? 0 : secretVersion;
       },
@@ -36,6 +36,7 @@ module.exports = {
   REDIS_CONNECTION_STRING: secretsEnv.REDIS_CONNECTION_STRING || '',
   JORE_GRAPHQL_URL: secretsEnv.JORE_GRAPHQL_URL || '',
   GENERATE_API_URL: secretsEnv.GENERATE_API_URL || '',
+  AZURE_FONTS_SAS_URL: secretsEnv.AZURE_FONTS_SAS_URL || '',
   AZURE_UPLOAD_CONTAINER: secretsEnv.AZURE_UPLOAD_CONTAINER || 'routemap-prod',
   AZURE_STORAGE_ACCOUNT: secretsEnv.AZURE_STORAGE_ACCOUNT || '',
   AZURE_STORAGE_KEY: secretsEnv.AZURE_STORAGE_KEY || '',

@@ -11,11 +11,9 @@ RUN apt-get update \
   && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
   && apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -yq $(apt-cache depends google-chrome-unstable | awk '/depends:/{print$2}') --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /src/*.deb
-
-# Install Azure CLI to download the fonts
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+  && wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 \
+  && cp ./azcopy /usr/bin/ \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV WORK /opt/publisher
 
