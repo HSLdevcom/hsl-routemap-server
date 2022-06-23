@@ -51,7 +51,7 @@ async function renderComponent(options) {
   const renderUrl = `${CLIENT_URL}/?props=${encodedProps}`;
   console.log(renderUrl);
 
-  await page.goto(renderUrl);
+  await page.goto(renderUrl, { waitUntil: 'networkidle0' });
 
   const { error, width, height } = await page.evaluate(
     () =>
