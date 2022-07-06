@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { trimRouteId } from '../../util/domain';
+import { trimRouteId, getColor } from '../../util/domain';
 import routeGeneralizer from '../../util/routeGeneralizer';
 
 import style from './terminusLabel.css';
@@ -21,17 +21,7 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration, trunkRouteIds }) 
     return arr.slice(1).reduce((xs, x) => xs.concat([sep, x]), [arr[0]]);
   }
 
-  const routes = routeGeneralizer(lines.map(id => trimRouteId(id))).map(item => {
-    item.trunkRoute = trunkRouteIds.includes(item.text);
-    item.style = style.bus;
-    if (item.type === 'tram') {
-      item.style = style.tram;
-    }
-    if (item.trunkRoute) {
-      item.style = style.trunk;
-    }
-    return item;
-  });
+  const routes = routeGeneralizer(lines.map(id => trimRouteId(id)));
   return (
     <div className={style.label} style={terminusStyle}>
       {(nameFi || nameSe) && (
@@ -52,11 +42,17 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration, trunkRouteIds }) 
         </div>
       )}
       {intersperse(
-        routes.map((item, index) => (
-          <span key={index} className={item.style}>
-            {item.text}
-          </span>
-        )),
+        routes.map((item, index) => {
+          const color = getColor({
+            mode: item.type.toUpperCase(),
+            trunkRoute: trunkRouteIds.includes(item.text),
+          });
+          return (
+            <span key={index} style={{ color, color }}>
+              {item.text}
+            </span>
+          );
+        }),
         ', ',
       )}
     </div>
