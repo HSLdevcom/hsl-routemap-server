@@ -5,7 +5,7 @@ import routeGeneralizer from '../../util/routeGeneralizer';
 
 import style from './terminusLabel.css';
 
-const TerminusLabel = ({ nameFi, nameSe, lines, configuration }) => {
+const TerminusLabel = ({ nameFi, nameSe, lines, configuration, trunkRouteIds }) => {
   const terminusStyle = {
     fontSize: `${configuration.terminusFontSize}px`,
     lineHeight: `${configuration.terminusFontSize}px`,
@@ -21,8 +21,17 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration }) => {
     return arr.slice(1).reduce((xs, x) => xs.concat([sep, x]), [arr[0]]);
   }
 
-  const routes = routeGeneralizer(lines.map(id => trimRouteId(id)));
-
+  const routes = routeGeneralizer(lines.map(id => trimRouteId(id))).map(item => {
+    item.trunkRoute = trunkRouteIds.includes(item.text);
+    item.style = style.bus;
+    if (item.type === 'tram') {
+      item.style = style.tram;
+    }
+    if (item.trunkRoute) {
+      item.style = style.trunk;
+    }
+    return item;
+  });
   return (
     <div className={style.label} style={terminusStyle}>
       {(nameFi || nameSe) && (
@@ -44,7 +53,7 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration }) => {
       )}
       {intersperse(
         routes.map((item, index) => (
-          <span key={index} className={item.type === 'tram' ? style.tram : style.bus}>
+          <span key={index} className={item.style}>
             {item.text}
           </span>
         )),

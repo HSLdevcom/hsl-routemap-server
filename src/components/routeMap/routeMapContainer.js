@@ -180,7 +180,19 @@ const terminalMapper = mapProps(props => {
         return value;
       }, [])
     : data.terminus.nodes;
-
+  const trunkRouteIds = [];
+  data.stopGroups.nodes.forEach(node => {
+    node.stops.nodes.forEach(node => {
+      node.routeSegments.nodes.forEach(routeSegmentNode => {
+        const routeId = trimRouteId(routeSegmentNode.routeId).trim();
+        const line = routeSegmentNode.line.nodes[0];
+        const trunkRoute = line && line.trunkRoute === '1';
+        if (trunkRoute && !trunkRouteIds.includes(routeId)) {
+          trunkRouteIds.push(routeId);
+        }
+      });
+    });
+  });
   // Remove intermediate boxes not containing routes and remove additional route ids.
   const intermediates = filter
     ? data.intermediates.nodes.reduce((value, intermediate) => {
@@ -337,6 +349,7 @@ const terminalMapper = mapProps(props => {
     projectedStops,
     projectedSymbols,
     date: props.date,
+    trunkRouteIds,
   };
 });
 
