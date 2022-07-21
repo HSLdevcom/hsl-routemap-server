@@ -2,43 +2,20 @@ import PropTypes from 'prop-types';
 import compose from 'recompose/compose';
 import mapProps from 'recompose/mapProps';
 import hslMapStyle from 'hsl-map-style';
-import mapValues from 'lodash/mapValues';
 
 import { fetchMap } from 'util/map';
 import promiseWrapper from 'util/promiseWrapper';
 import MapImage from './mapImage';
 
-const propsMapper = mapProps(({ options, components, date, routeFilter, extraLayers }) => {
+const propsMapper = mapProps(({ options, components, date, routeFilter }) => {
   const mapStyle = hslMapStyle.generateStyle({
     components: {
       ...components,
       routes_with_departures_only: { enabled: false }, // To show routes also in the future.
     },
     routeFilter,
+    joreDate: date,
   });
-
-  const sources = mapValues(mapStyle.sources, (value, key) => {
-    // eslint-disable-next-line no-param-reassign
-    value.url += `?date=${date}`;
-    return value;
-  });
-
-  mapStyle.sources = sources;
-
-  // Remove source containing bus routes (rail and subway routes have separate sources)
-  if (components.routes && components.routes.enabled && components.routes.hideBusRoutes) {
-    mapStyle.sources.routes = {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: [],
-      },
-    };
-  }
-
-  if (extraLayers) {
-    mapStyle.layers = [...mapStyle.layers, ...extraLayers];
-  }
 
   return { src: fetchMap(options, mapStyle) };
 });
@@ -65,16 +42,10 @@ MapImageContainer.propTypes = {
   components: PropTypes.objectOf(
     PropTypes.shape({
       enabled: PropTypes.bool.isRequired,
-      hideBusRoutes: PropTypes.bool,
     }),
   ).isRequired,
   date: PropTypes.string,
   routeFilter: PropTypes.arrayOf(PropTypes.string).isRequired,
-  extraLayers: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    }),
-  ),
 };
 
 export default MapImageContainer;
