@@ -152,64 +152,6 @@ async function addEvent({ posterId = null, buildId = null, type, message }) {
   );
 }
 
-async function getConfig() {
-  const configs = await knex('routepath_import_config')
-    .select('*')
-    .where({ name: 'default' });
-  if (configs.length === 1) {
-    return configs[0];
-  }
-  return null;
-}
-
-async function setDateConfig(date) {
-  const oldConfig = await getConfig();
-  if (oldConfig) {
-    await knex('routepath_import_config')
-      .where({ name: 'default' })
-      .update({
-        target_date: date,
-        status: 'PENDING',
-      });
-  } else {
-    await knex('routepath_import_config').insert({
-      name: 'default',
-      status: 'PENDING',
-      target_date: date,
-    });
-  }
-  return getConfig();
-}
-
-async function setUpdatedAtConfig() {
-  const oldConfig = await getConfig();
-  if (oldConfig) {
-    await knex('routepath_import_config')
-      .where({ name: 'default' })
-      .update({
-        updated_at: new Date().toISOString(),
-      });
-  } else {
-    await knex('routepath_import_config').insert({
-      name: 'default',
-      updated_at: new Date().toISOString(),
-    });
-  }
-  return getConfig();
-}
-
-async function setStatusConfig(status) {
-  const oldConfig = await getConfig();
-  if (oldConfig) {
-    await knex('routepath_import_config')
-      .where({ name: 'default' })
-      .update({ status });
-  } else {
-    await knex('routepath_import_config').insert({ status, name: 'default' });
-  }
-  return getConfig();
-}
-
 module.exports = {
   migrate,
   getBuilds,
@@ -222,8 +164,4 @@ module.exports = {
   updatePoster,
   removePoster,
   addEvent,
-  setDateConfig,
-  setStatusConfig,
-  setUpdatedAtConfig,
-  getConfig,
 };

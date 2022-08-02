@@ -19,12 +19,14 @@ const {
   addPoster,
   updatePoster,
   removePoster,
+} = require('./store');
+const {
+  generatePoints,
   getConfig,
   setDateConfig,
   setStatusConfig,
   setUpdatedAtConfig,
-} = require('./store');
-const { generatePoints } = require('./joreStore');
+} = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
 
 const { REDIS_CONNECTION_STRING } = require('../constants');
