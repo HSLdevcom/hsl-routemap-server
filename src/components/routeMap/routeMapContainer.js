@@ -149,6 +149,7 @@ const nearbyTerminals = gql`
                     destinationFi
                     destinationSe
                     mode
+                    routeIdParsed
                   }
                 }
               }
@@ -174,7 +175,15 @@ const terminalMapper = mapProps(props => {
     ? data.terminus.nodes.reduce((value, terminus) => {
         const filteredTerminus = {
           ...terminus,
-          lines: terminus.lines.filter(l => routeFilter.includes(l)),
+          lines: terminus.lines.filter(l => {
+            return routeFilter.some(filterObj => {
+              if (filterObj.idParsed) {
+                const trimmedId = trimRouteId(l);
+                return filterObj.idParsed === trimmedId;
+              }
+              return filterObj.id === l || filterObj === l;
+            });
+          }),
         };
         if (filteredTerminus.lines.length > 0) return value.concat(filteredTerminus);
         return value;
@@ -186,7 +195,15 @@ const terminalMapper = mapProps(props => {
     ? data.intermediates.nodes.reduce((value, intermediate) => {
         const filteredIntermediate = {
           ...intermediate,
-          routes: intermediate.routes.filter(r => routeFilter.includes(r)),
+          routes: intermediate.routes.filter(r => {
+            return routeFilter.some(filterObj => {
+              if (filterObj.idParsed) {
+                const trimmedId = trimRouteId(r);
+                return filterObj.idParsed === trimmedId;
+              }
+              return filterObj.id === r || filterObj === r;
+            });
+          }),
         };
         if (filteredIntermediate.routes.length > 0) return value.concat(filteredIntermediate);
         return value;
@@ -197,8 +214,24 @@ const terminalMapper = mapProps(props => {
   const stops = filter
     ? data.stopGroups.nodes.reduce((value, stopGroup) => {
         const routeSegments = flatMap(stopGroup.stops.nodes, node => node.routeSegments.nodes);
-        const routeIds = routeSegments.map(routeSegment => routeSegment.routeId);
-        if (routeIds.some(r => routeFilter.includes(r))) return value.concat(stopGroup);
+        const routeIds = routeSegments.map(routeSegment => {
+          return {
+            routeId: routeSegment.routeId,
+            routeIdParsed: routeSegment.route.nodes[0].routeIdParsed,
+          };
+        });
+        if (
+          routeIds.some(routeStrings => {
+            return routeFilter.some(
+              filterObj =>
+                filterObj.id === routeStrings.routeId ||
+                filterObj.idParsed === routeStrings.routeIdParsed ||
+                filterObj === routeStrings.routeId,
+            );
+          })
+        ) {
+          return value.concat(stopGroup);
+        }
         return value;
       }, [])
     : data.stopGroups.nodes;
@@ -225,7 +258,6 @@ const terminalMapper = mapProps(props => {
   const projectedStops = stops
     .map(stop => {
       const [x, y] = viewport.project([parseFloat(stop.lon), parseFloat(stop.lat)]);
-
       return {
         x,
         y,
@@ -236,6 +268,7 @@ const terminalMapper = mapProps(props => {
             .filter(routeSegment => routeSegment.route.nodes.length)
             .map(routeSegment => ({
               routeId: trimRouteId(routeSegment.routeId),
+              routeIdParsed: routeSegment.route.nodes[0].routeIdParsed,
               destinationFi: routeSegment.route.nodes[0].destinationFi,
               destinationSe: routeSegment.route.nodes[0].destinationSe,
               trunkRoute:

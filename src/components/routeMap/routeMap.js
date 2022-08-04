@@ -257,6 +257,7 @@ const StopType = PropTypes.shape({
   routes: PropTypes.arrayOf(
     PropTypes.shape({
       routeId: PropTypes.string.isRequired,
+      routeIdParsed: PropTypes.string.isRequired,
       mode: PropTypes.string.isRequired,
     }),
   ).isRequired,
