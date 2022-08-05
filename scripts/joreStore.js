@@ -14,6 +14,7 @@ async function generatePoints(date) {
 
 async function getConfig() {
   const configs = await knex('intermediate_points_status')
+    .withSchema('jorestatic')
     .select('*')
     .where({ name: 'default' });
   if (configs.length === 1) {
@@ -26,17 +27,20 @@ async function setDateConfig(date) {
   const oldConfig = await getConfig();
   if (oldConfig) {
     await knex('intermediate_points_status')
+      .withSchema('jorestatic')
       .where({ name: 'default' })
       .update({
         target_date: date,
         status: 'PENDING',
       });
   } else {
-    await knex('intermediate_points_status').insert({
-      name: 'default',
-      status: 'PENDING',
-      target_date: date,
-    });
+    await knex('intermediate_points_status')
+      .withSchema('jorestatic')
+      .insert({
+        name: 'default',
+        status: 'PENDING',
+        target_date: date,
+      });
   }
   return getConfig();
 }
@@ -45,15 +49,18 @@ async function setUpdatedAtConfig() {
   const oldConfig = await getConfig();
   if (oldConfig) {
     await knex('intermediate_points_status')
+      .withSchema('jorestatic')
       .where({ name: 'default' })
       .update({
         updated_at: new Date().toISOString(),
       });
   } else {
-    await knex('intermediate_points_status').insert({
-      name: 'default',
-      updated_at: new Date().toISOString(),
-    });
+    await knex('intermediate_points_status')
+      .withSchema('jorestatic')
+      .insert({
+        name: 'default',
+        updated_at: new Date().toISOString(),
+      });
   }
   return getConfig();
 }
@@ -62,10 +69,13 @@ async function setStatusConfig(status) {
   const oldConfig = await getConfig();
   if (oldConfig) {
     await knex('intermediate_points_status')
+      .withSchema('jorestatic')
       .where({ name: 'default' })
       .update({ status });
   } else {
-    await knex('intermediate_points_status').insert({ status, name: 'default' });
+    await knex('intermediate_points_status')
+      .withSchema('jorestatic')
+      .insert({ status, name: 'default' });
   }
   return getConfig();
 }
