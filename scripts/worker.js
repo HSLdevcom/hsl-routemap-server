@@ -35,15 +35,21 @@ async function renderComponent(options) {
   props.id = id;
   const page = await browser.newPage();
 
-  page.on('error', error => {
-    page.close();
-    browser.close();
+  page.on('error', async error => {
+    await page.close();
+    await browser.close();
     onError(error);
   });
 
-  page.on('console', ({ type, text }) => {
-    if (['error', 'warning', 'log'].includes(type)) {
-      onInfo(`Console(${type}): ${text}`);
+  // Puppeteer error logs.
+  page.on('pageerror', error => {
+    onError(error);
+  });
+
+  // Puppeteer console.
+  page.on('console', msg => {
+    if (['warning', 'log'].includes(msg.type())) {
+      onInfo(`Console(${msg.type()}): ${msg.text()}`);
     }
   });
 
@@ -51,37 +57,36 @@ async function renderComponent(options) {
   const renderUrl = `${CLIENT_URL}/?props=${encodedProps}`;
   console.log(renderUrl);
 
-  await page.goto(renderUrl, { waitUntil: 'networkidle0' });
+  await page.goto(renderUrl, { timeout: RENDER_TIMEOUT });
 
-  const { error, width, height } = await page.evaluate(
-    () =>
-      new Promise(resolve => {
-        window.callPhantom = opts => resolve(opts);
-      }),
-  );
+  // Wait until the page informs to be ready or having error.
+  await page.waitForFunction('window.renderStatus !== undefined', {
+    timeout: RENDER_TIMEOUT,
+  });
 
-  if (error) {
-    throw new Error(error);
+  // Check if there were error in the page. Note! This captures only properly handled errors in the page.
+  const wasError = await page.evaluate(() => window.renderStatus === 'error');
+  if (wasError) {
+    throw new Error('Rendering process failed due to an error on the page.');
   }
+
+  // Get the dimensions of the page
+  const { width, height } = await page.evaluate(() => {
+    return {
+      width: document.getElementById('rootImageElement').offsetWidth,
+      height: document.getElementById('rootImageElement').offsetHeight,
+    };
+  });
 
   await page.emulateMediaType('screen');
 
-  let printOptions = {};
-  if (props.printTimetablesAsA4) {
-    printOptions = {
-      printBackground: true,
-      format: 'A4',
-      margin: 0,
-    };
-  } else {
-    printOptions = {
-      printBackground: true,
-      width: width * SCALE,
-      height: height * SCALE,
-      pageRanges: '1',
-      scale: SCALE,
-    };
-  }
+  const printOptions = {
+    printBackground: true,
+    width: width * SCALE,
+    height: height * SCALE,
+    pageRanges: '1',
+    scale: SCALE,
+  };
 
   const contents = await page.pdf(printOptions);
 
