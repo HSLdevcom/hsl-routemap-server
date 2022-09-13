@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { trimRouteId } from '../../util/domain';
+import { trimRouteId, getColor } from '../../util/domain';
 import routeGeneralizer from '../../util/routeGeneralizer';
 
 import style from './terminusLabel.css';
 
-const TerminusLabel = ({ nameFi, nameSe, lines, configuration }) => {
+const TerminusLabel = ({ nameFi, nameSe, lines, configuration, trunkRouteIds }) => {
   const terminusStyle = {
     fontSize: `${configuration.terminusFontSize}px`,
     lineHeight: `${configuration.terminusFontSize}px`,
@@ -22,7 +22,6 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration }) => {
   }
 
   const routes = routeGeneralizer(lines.map(id => trimRouteId(id)));
-
   return (
     <div className={style.label} style={terminusStyle}>
       {(nameFi || nameSe) && (
@@ -43,11 +42,17 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration }) => {
         </div>
       )}
       {intersperse(
-        routes.map((item, index) => (
-          <span key={index} className={item.type === 'tram' ? style.tram : style.bus}>
-            {item.text}
-          </span>
-        )),
+        routes.map((item, index) => {
+          const color = getColor({
+            mode: item.type.toUpperCase(),
+            trunkRoute: trunkRouteIds.includes(item.text),
+          });
+          return (
+            <span key={index} style={{ color, color }}>
+              {item.text}
+            </span>
+          );
+        }),
         ', ',
       )}
     </div>

@@ -130,7 +130,11 @@ const RouteMap = props => {
               allowHidden
               anglePriority={1}
               angle={intermediate.angle}>
-              <IntermediateLabel label={intermediate.label} configuration={props.configuration} />
+              <IntermediateLabel
+                trunkRouteIds={props.trunkRouteIds}
+                label={intermediate.label}
+                configuration={props.configuration}
+              />
             </ItemPositioned>
           ))}
           {props.projectedIntermediates
@@ -197,6 +201,7 @@ const RouteMap = props => {
                 nameSe={terminus.nameSe}
                 type={terminus.type}
                 configuration={props.configuration}
+                trunkRouteIds={props.trunkRouteIds}
               />
             </ItemPositioned>
           ))}
