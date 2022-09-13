@@ -287,6 +287,7 @@ RouteMap.propTypes = {
   mapComponents: PropTypes.object.isRequired, // eslint-disable-line
   pxPerMeterRatio: PropTypes.number.isRequired,
   configuration: PropTypes.shape(ConfigurationOptionsProps).isRequired,
+  trunkRouteIds: PropTypes.array.isRequired,
 };
 
 export default RouteMap;

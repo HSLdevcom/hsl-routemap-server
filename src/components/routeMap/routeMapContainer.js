@@ -190,9 +190,9 @@ const terminalMapper = mapProps(props => {
       }, [])
     : data.terminus.nodes;
   const trunkRouteIds = [];
-  data.stopGroups.nodes.forEach(node => {
-    node.stops.nodes.forEach(node => {
-      node.routeSegments.nodes.forEach(routeSegmentNode => {
+  data.stopGroups.nodes.forEach(sg => {
+    sg.stops.nodes.forEach(stop => {
+      stop.routeSegments.nodes.forEach(routeSegmentNode => {
         const routeId = trimRouteId(routeSegmentNode.routeId).trim();
         const line = routeSegmentNode.line.nodes[0];
         const trunkRoute = line && line.trunkRoute === '1';

@@ -48,7 +48,7 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration, trunkRouteIds }) 
             trunkRoute: trunkRouteIds.includes(item.text),
           });
           return (
-            <span key={index} style={{ color, color }}>
+            <span key={index} style={{ color }}>
               {item.text}
             </span>
           );
@@ -74,6 +74,7 @@ TerminusLabel.propTypes = {
   configuration: PropTypes.shape(TerminusConfiguration).isRequired,
   nameFi: PropTypes.string,
   nameSe: PropTypes.string,
+  trunkRouteIds: PropTypes.array.isRequired,
 };
 
 export default TerminusLabel;
