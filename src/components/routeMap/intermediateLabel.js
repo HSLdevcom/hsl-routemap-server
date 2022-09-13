@@ -26,7 +26,7 @@ const IntermediateLabel = ({ trunkRouteIds, label, configuration }) => {
             trunkRoute: trunkRouteIds.includes(item.text),
           });
           return (
-            <span key={index} style={{ color: color }}>
+            <span key={index} style={{ color }}>
               {item.text}
             </span>
           );
@@ -50,6 +50,7 @@ const IntermediateLabelType = PropTypes.shape({
 IntermediateLabel.propTypes = {
   label: PropTypes.arrayOf(IntermediateLabelType).isRequired,
   configuration: PropTypes.shape(IntermediateConfiguration).isRequired,
+  trunkRouteIds: PropTypes.array.isRequired,
 };
 
 export default IntermediateLabel;
