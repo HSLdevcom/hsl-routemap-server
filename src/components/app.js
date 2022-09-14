@@ -9,11 +9,9 @@ import RouteMap from 'components/routeMap/routeMapContainer';
 import renderQueue from 'util/renderQueue';
 
 function handleError(error) {
-  if (window.callPhantom) {
-    window.callPhantom({ error: error.message });
-    return;
-  }
   console.error(error); // eslint-disable-line no-console
+  // Inform server that runs puppeteer about the problem.
+  window.renderStatus = 'error';
 }
 
 let props = false;
@@ -44,12 +42,8 @@ class App extends Component {
           handleError(error);
           return;
         }
-        if (window.callPhantom) {
-          window.callPhantom({
-            width: this.root.offsetWidth,
-            height: this.root.offsetHeight,
-          });
-        }
+        console.log('Rendering finished');
+        window.renderStatus = 'ready';
       });
     }
   }
@@ -73,12 +67,13 @@ class App extends Component {
 
     return (
       <div
+        id="rootImageElement"
         style={rootStyle}
         ref={ref => {
           this.root = ref;
         }}>
         <ApolloProvider client={client}>
-          <RouteMap {...props} />
+          <RouteMap {...props} /> {/* eslint-disable-line react/jsx-props-no-spreading */}
         </ApolloProvider>
       </div>
     );

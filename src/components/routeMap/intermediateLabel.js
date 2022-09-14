@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import { getColor } from '../../util/domain';
 import style from './intermediateLabel.css';
 
-const IntermediateLabel = ({ label, configuration }) => {
+const IntermediateLabel = ({ trunkRouteIds, label, configuration }) => {
   const intermediateStyle = {
     fontSize: `${configuration.intermediatePointFontSize}px`,
     lineHeight: `${configuration.intermediatePointFontSize}px`,
@@ -17,15 +17,20 @@ const IntermediateLabel = ({ label, configuration }) => {
 
     return arr.slice(1).reduce((xs, x) => xs.concat([sep, x]), [arr[0]]);
   }
-
   return (
     <div className={style.label} style={intermediateStyle}>
       {intersperse(
-        label.map((item, index) => (
-          <span key={index} className={item.type === 'tram' ? style.tram : style.bus}>
-            {item.text}
-          </span>
-        )),
+        label.map((item, index) => {
+          const color = getColor({
+            mode: item.type.toUpperCase(),
+            trunkRoute: trunkRouteIds.includes(item.text),
+          });
+          return (
+            <span key={index} style={{ color }}>
+              {item.text}
+            </span>
+          );
+        }),
         ', ',
       )}
     </div>
@@ -45,6 +50,7 @@ const IntermediateLabelType = PropTypes.shape({
 IntermediateLabel.propTypes = {
   label: PropTypes.arrayOf(IntermediateLabelType).isRequired,
   configuration: PropTypes.shape(IntermediateConfiguration).isRequired,
+  trunkRouteIds: PropTypes.array.isRequired,
 };
 
 export default IntermediateLabel;

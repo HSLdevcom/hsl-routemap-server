@@ -130,7 +130,11 @@ const RouteMap = props => {
               allowHidden
               anglePriority={1}
               angle={intermediate.angle}>
-              <IntermediateLabel label={intermediate.label} configuration={props.configuration} />
+              <IntermediateLabel
+                trunkRouteIds={props.trunkRouteIds}
+                label={intermediate.label}
+                configuration={props.configuration}
+              />
             </ItemPositioned>
           ))}
           {props.projectedIntermediates
@@ -197,6 +201,7 @@ const RouteMap = props => {
                 nameSe={terminus.nameSe}
                 type={terminus.type}
                 configuration={props.configuration}
+                trunkRouteIds={props.trunkRouteIds}
               />
             </ItemPositioned>
           ))}
@@ -257,6 +262,7 @@ const StopType = PropTypes.shape({
   routes: PropTypes.arrayOf(
     PropTypes.shape({
       routeId: PropTypes.string.isRequired,
+      routeIdParsed: PropTypes.string.isRequired,
       mode: PropTypes.string.isRequired,
     }),
   ).isRequired,
@@ -281,6 +287,7 @@ RouteMap.propTypes = {
   mapComponents: PropTypes.object.isRequired, // eslint-disable-line
   pxPerMeterRatio: PropTypes.number.isRequired,
   configuration: PropTypes.shape(ConfigurationOptionsProps).isRequired,
+  trunkRouteIds: PropTypes.array.isRequired,
 };
 
 export default RouteMap;
