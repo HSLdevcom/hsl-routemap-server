@@ -69,7 +69,7 @@ MapImageContainer.propTypes = {
     }),
   ).isRequired,
   date: PropTypes.string,
-  routeFilter: PropTypes.arrayOf(PropTypes.string).isRequired,
+  routeFilter: PropTypes.array.isRequired,
   extraLayers: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
