@@ -82,14 +82,14 @@ async function addBuild({ title }) {
 async function updateBuild({ id, status }) {
   await knex('build')
     .where({ id })
-    .update({ status });
+    .update({ status, updated_at: knex.fn.now() });
   return { id };
 }
 
 async function removeBuild({ id }) {
   await knex('build')
     .where({ id })
-    .update({ status: 'REMOVED' });
+    .update({ status: 'REMOVED', updated_at: knex.fn.now() });
   return { id };
 }
 
@@ -121,20 +121,28 @@ async function addPoster({ buildId, props }) {
       snakeCase,
     ),
   );
+  await knex('build')
+    .where('id', buildId)
+    .update({ updated_at: knex.fn.now() });
+
   return { id };
 }
 
 async function updatePoster({ id, status }) {
   await knex('poster')
     .where({ id })
-    .update({ status });
+    .update({ status, updated_at: knex.fn.now() });
   return { id };
 }
 
 async function removePoster({ id }) {
-  await knex('poster')
+  const buildId = await knex('poster')
+    .returning('build_id')
     .where({ id })
-    .update({ status: 'REMOVED' });
+    .update({ status: 'REMOVED', updated_at: knex.fn.now() });
+  await knex('build')
+    .where('id', buildId[0].build_id)
+    .update({ updated_at: knex.fn.now() });
   return { id };
 }
 
@@ -170,6 +178,7 @@ async function setDateConfig(date) {
       .update({
         target_date: date,
         status: 'PENDING',
+        updated_at: knex.fn.now(),
       });
   } else {
     await knex('routepath_import_config').insert({
@@ -181,29 +190,12 @@ async function setDateConfig(date) {
   return getConfig();
 }
 
-async function setUpdatedAtConfig() {
-  const oldConfig = await getConfig();
-  if (oldConfig) {
-    await knex('routepath_import_config')
-      .where({ name: 'default' })
-      .update({
-        updated_at: new Date().toISOString(),
-      });
-  } else {
-    await knex('routepath_import_config').insert({
-      name: 'default',
-      updated_at: new Date().toISOString(),
-    });
-  }
-  return getConfig();
-}
-
 async function setStatusConfig(status) {
   const oldConfig = await getConfig();
   if (oldConfig) {
     await knex('routepath_import_config')
       .where({ name: 'default' })
-      .update({ status });
+      .update({ status, updated_at: knex.fn.now() });
   } else {
     await knex('routepath_import_config').insert({ status, name: 'default' });
   }
@@ -224,6 +216,5 @@ module.exports = {
   addEvent,
   setDateConfig,
   setStatusConfig,
-  setUpdatedAtConfig,
   getConfig,
 };
