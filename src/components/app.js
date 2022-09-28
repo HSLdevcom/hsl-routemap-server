@@ -73,7 +73,7 @@ class App extends Component {
           this.root = ref;
         }}>
         <ApolloProvider client={client}>
-          <RouteMap {...props} />
+          <RouteMap {...props} /> {/* eslint-disable-line react/jsx-props-no-spreading */}
         </ApolloProvider>
       </div>
     );
