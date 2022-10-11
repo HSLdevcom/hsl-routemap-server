@@ -12,6 +12,14 @@ class Matrix {
     this.mapComponents = mapComponents;
 
     this.mapStyle = hslMapStyle.generateStyle({
+      sourcesUrl: process.env.DIGITRANSIT_URL,
+      queryParams: [
+        {
+          url: process.env.DIGITRANSIT_URL,
+          name: 'digitransit-subscription-key',
+          value: process.env.DIGITRANSIT_APIKEY,
+        },
+      ],
       components: {
         ...mapComponents,
         base: { enabled: false },

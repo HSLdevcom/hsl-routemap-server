@@ -9,6 +9,14 @@ import MapImage from './mapImage';
 
 const propsMapper = mapProps(({ options, components, date, routeFilter }) => {
   const mapStyle = hslMapStyle.generateStyle({
+    sourcesUrl: process.env.DIGITRANSIT_URL,
+    queryParams: [
+      {
+        url: process.env.DIGITRANSIT_URL,
+        name: 'digitransit-subscription-key',
+        value: process.env.DIGITRANSIT_APIKEY,
+      },
+    ],
     components: {
       ...components,
       routes_with_departures_only: { enabled: false }, // To show routes also in the future.
