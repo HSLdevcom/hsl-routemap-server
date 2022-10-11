@@ -13,7 +13,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ENV WORK /opt/publisher
-ENV NODE_ENV production
+# ENV NODE_ENV production # Cannot use until devdependency list is fixed in package.json
 
 # Create app directory
 RUN mkdir -p ${WORK}
