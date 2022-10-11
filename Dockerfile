@@ -8,11 +8,12 @@ RUN apt-get update \
     && sh -c 'echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -yq google-chrome-stable libxss1 --no-install-recommends \
-  && wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 \
-  && cp ./azcopy /usr/bin/ \
+  && wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && rm azcopy_v10.tar.gz \
+  && mv ./azcopy /usr/bin/ \
   && rm -rf /var/lib/apt/lists/*
 
 ENV WORK /opt/publisher
+ENV NODE_ENV production
 
 # Create app directory
 RUN mkdir -p ${WORK}
