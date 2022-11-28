@@ -32,7 +32,7 @@ jobs:
         id: timestamp
         run: echo "timestamp=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Build and push timestamped tag
+      - name: Build and push image
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -42,3 +42,4 @@ jobs:
             hsldevcom/hsl-routemap-server:prod
           build-args: |
             BUILD_ENV=prod
+            DIGITRANSIT_APIKEY=${{ secrets.KARTAT_DIGITRANSITAPIKEY_PROD }}
