@@ -86,6 +86,7 @@ async function renderComponent(options) {
     height: height * SCALE,
     pageRanges: '1',
     scale: SCALE,
+    timeout: 60000,
   };
 
   const contents = await page.pdf(printOptions);
