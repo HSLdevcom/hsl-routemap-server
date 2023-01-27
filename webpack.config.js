@@ -5,7 +5,7 @@ const Dotenv = require('dotenv-webpack');
 module.exports = {
   devtool: 'source-map',
   entry: ['./src/index.js'],
-  plugins: [new HtmlWebpackPlugin({ template: 'index.ejs' }), new Dotenv()],
+  plugins: [new HtmlWebpackPlugin({ template: 'index.ejs' }), new Dotenv({ systemvars: true })],
   resolve: {
     modules: ['node_modules', 'src'],
   },

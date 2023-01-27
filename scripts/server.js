@@ -22,7 +22,6 @@ const {
   getConfig,
   setDateConfig,
   setStatusConfig,
-  setUpdatedAtConfig,
 } = require('./store');
 const { generatePoints } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
@@ -90,6 +89,7 @@ async function main() {
 
   const app = new Koa();
   const router = new Router();
+  const unAuthorizedRouter = new Router();
 
   router.get('/builds', async ctx => {
     const builds = await getBuilds();
@@ -213,7 +213,6 @@ async function main() {
       config = await setDateConfig(targetDate);
       await generatePoints(config.target_date)
         .then(async () => {
-          await setUpdatedAtConfig();
           await setStatusConfig('READY');
         })
         .catch(async () => {
@@ -253,6 +252,10 @@ async function main() {
     ctx.response.status = authResponse.status;
   });
 
+  unAuthorizedRouter.get('/health', async ctx => {
+    ctx.status = 200;
+  });
+
   app.keys = ['secret key'];
 
   const CONFIG = {
@@ -264,6 +267,7 @@ async function main() {
 
   app
     .use(errorHandler)
+    .use(unAuthorizedRouter.routes())
     .use(
       cors({
         credentials: true,
