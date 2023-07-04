@@ -6,6 +6,7 @@ const config = require('./webpack.config');
 const PORT = 5000;
 
 config.devtool = 'eval';
+config.mode = 'development';
 
 if (process.env.HMR === 'true') {
   config.entry = [
