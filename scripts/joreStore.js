@@ -32,15 +32,14 @@ async function setDateConfig(date) {
       .update({
         target_date: date,
         status: 'PENDING',
+        updated_at: knex.fn.now(),
       });
   } else {
-    await knex('intermediate_points_status')
-      .withSchema('jorestatic')
-      .insert({
-        name: 'default',
-        status: 'PENDING',
-        target_date: date,
-      });
+    await knex('intermediate_points_status').withSchema('jorestatic').insert({
+      name: 'default',
+      status: 'PENDING',
+      target_date: date,
+    });
   }
   return getConfig();
 }
@@ -55,12 +54,10 @@ async function setUpdatedAtConfig() {
         updated_at: new Date().toISOString(),
       });
   } else {
-    await knex('intermediate_points_status')
-      .withSchema('jorestatic')
-      .insert({
-        name: 'default',
-        updated_at: new Date().toISOString(),
-      });
+    await knex('intermediate_points_status').withSchema('jorestatic').insert({
+      name: 'default',
+      updated_at: new Date().toISOString(),
+    });
   }
   return getConfig();
 }
@@ -71,7 +68,7 @@ async function setStatusConfig(status) {
     await knex('intermediate_points_status')
       .withSchema('jorestatic')
       .where({ name: 'default' })
-      .update({ status });
+      .update({ status, updated_at: knex.fn.now() });
   } else {
     await knex('intermediate_points_status')
       .withSchema('jorestatic')

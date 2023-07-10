@@ -60,7 +60,30 @@ const errorHandler = async (ctx, next) => {
   } catch (error) {
     ctx.status = error.status || 500;
     ctx.body = { message: error.message };
-    console.error(error); // eslint-disable-line no-console
+    if (ctx.status !== 401) {
+      console.error(error); // eslint-disable-line no-console
+    }
+  }
+};
+
+const authMiddleware = async (ctx, next) => {
+  const endpointsNotRequiringAuthentication = ['/login', '/logout', '/session'];
+  if (endpointsNotRequiringAuthentication.includes(ctx.path)) {
+    // Do not check the authentication beforehands for session related paths.
+    await next();
+  } else {
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+
+    if (!authResponse.body.isOk) {
+      // Not authenticated, throw 401
+      ctx.throw(401);
+    } else {
+      await next();
+    }
   }
 };
 
@@ -69,25 +92,26 @@ async function main() {
 
   const app = new Koa();
   const router = new Router();
+  const unAuthorizedRouter = new Router();
 
-  router.get('/builds', async ctx => {
+  router.get('/builds', async (ctx) => {
     const builds = await getBuilds();
     ctx.body = builds;
   });
 
-  router.get('/builds/:id', async ctx => {
+  router.get('/builds/:id', async (ctx) => {
     const { id } = ctx.params;
     const builds = await getBuild({ id });
     ctx.body = builds;
   });
 
-  router.post('/builds', async ctx => {
+  router.post('/builds', async (ctx) => {
     const { title } = ctx.request.body;
     const build = await addBuild({ title });
     ctx.body = build;
   });
 
-  router.put('/builds/:id', async ctx => {
+  router.put('/builds/:id', async (ctx) => {
     const { id } = ctx.params;
     const { status } = ctx.request.body;
     const build = await updateBuild({
@@ -97,19 +121,19 @@ async function main() {
     ctx.body = build;
   });
 
-  router.delete('/builds/:id', async ctx => {
+  router.delete('/builds/:id', async (ctx) => {
     const { id } = ctx.params;
     const build = await removeBuild({ id });
     ctx.body = build;
   });
 
-  router.get('/posters/:id', async ctx => {
+  router.get('/posters/:id', async (ctx) => {
     const { id } = ctx.params;
     const poster = await getPoster({ id });
     ctx.body = poster;
   });
 
-  router.post('/posters', async ctx => {
+  router.post('/posters', async (ctx) => {
     const { buildId, props } = ctx.request.body;
     const authResponse = await authEndpoints.checkExistingSession(
       ctx.request,
@@ -128,7 +152,7 @@ async function main() {
     ctx.body = posters;
   });
 
-  router.post('/cancelPoster', async ctx => {
+  router.post('/cancelPoster', async (ctx) => {
     const { item } = ctx.request.body;
     const jobId = item.id;
 
@@ -142,17 +166,19 @@ async function main() {
     ctx.body = poster;
   });
 
-  router.post('/removePosters', async ctx => {
+  router.post('/removePosters', async (ctx) => {
     const { item } = ctx.request.body;
     const poster = await removePoster({ id: item.id });
 
     ctx.body = poster;
   });
 
-  router.get('/downloadBuild/:id', async ctx => {
+  router.get('/downloadBuild/:id', async (ctx) => {
     const { id } = ctx.params;
     const { title, posters } = await getBuild({ id });
-    const posterIds = posters.filter(poster => poster.status === 'READY').map(poster => poster.id);
+    const posterIds = posters
+      .filter((poster) => poster.status === 'READY')
+      .map((poster) => poster.id);
     await downloadPostersFromCloud(posterIds);
     const content = await fileHandler.concatenate(posterIds);
 
@@ -165,7 +191,7 @@ async function main() {
     });
   });
 
-  router.get('/downloadPoster/:id', async ctx => {
+  router.get('/downloadPoster/:id', async (ctx) => {
     const { id } = ctx.params;
     const poster = await getPoster({ id });
     const name = get(poster, 'props.configuration.name');
@@ -181,7 +207,7 @@ async function main() {
     });
   });
 
-  router.post('/import', async ctx => {
+  router.post('/import', async (ctx) => {
     const { targetDate } = ctx.query;
     let config = await getConfig();
     if (config && config.status === 'PENDING') {
@@ -192,7 +218,6 @@ async function main() {
       config = await setDateConfig(targetDate);
       await generatePoints(config.target_date)
         .then(async () => {
-          await setUpdatedAtConfig();
           await setStatusConfig('READY');
         })
         .catch(async () => {
@@ -202,11 +227,11 @@ async function main() {
     }
   });
 
-  router.get('/config', async ctx => {
+  router.get('/config', async (ctx) => {
     ctx.body = await getConfig();
   });
 
-  router.post('/login', async ctx => {
+  router.post('/login', async (ctx) => {
     const authResponse = await authEndpoints.authorize(ctx.request, ctx.response, ctx.session);
     ctx.session = null;
     if (authResponse.modifiedSession) {
@@ -216,13 +241,13 @@ async function main() {
     ctx.response.status = authResponse.status;
   });
 
-  router.get('/logout', async ctx => {
+  router.get('/logout', async (ctx) => {
     const authResponse = await authEndpoints.logout(ctx.request, ctx.response, ctx.session);
     ctx.session = null;
     ctx.response.status = authResponse.status;
   });
 
-  router.get('/session', async ctx => {
+  router.get('/session', async (ctx) => {
     const authResponse = await authEndpoints.checkExistingSession(
       ctx.request,
       ctx.response,
@@ -230,6 +255,10 @@ async function main() {
     );
     ctx.body = authResponse.body;
     ctx.response.status = authResponse.status;
+  });
+
+  unAuthorizedRouter.get('/health', async (ctx) => {
+    ctx.status = 200;
   });
 
   app.keys = ['secret key'];
@@ -243,15 +272,17 @@ async function main() {
 
   app
     .use(errorHandler)
+    .use(unAuthorizedRouter.routes())
     .use(
       cors({
         credentials: true,
       }),
     )
+    .use(authMiddleware)
     .use(jsonBody({ fallback: true, limit: '10mb' }))
     .use(router.routes())
     .use(router.allowedMethods())
     .listen(PORT, () => console.log(`Listening at ${PORT}`)); // eslint-disable-line no-console
 }
 
-main().catch(error => console.error(error)); // eslint-disable-line no-console
+main().catch((error) => console.error(error)); // eslint-disable-line no-console

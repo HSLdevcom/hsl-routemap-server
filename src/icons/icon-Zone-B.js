@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const BZone = props => (
+const BZone = (props) => (
   <div>
     <svg
       width={props.size}
@@ -9,7 +9,8 @@ const BZone = props => (
       viewBox="0 0 36 36"
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
-      xlink="http://www.w3.org/1999/xlink">
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+    >
       <title>icon-Zone-B-v2</title>
       <desc>Created with Sketch.</desc>
       <defs />

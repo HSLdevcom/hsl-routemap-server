@@ -48,9 +48,11 @@ const getZoneIcon = (zone, size) => {
   }
 };
 
-const ZoneSymbol = props => (
+const ZoneSymbol = (props) => (
   <div className={styles.zoneSymbol}>{getZoneIcon(props.zone, props.size)}</div>
 );
+
+const Attribution = () => <div className={styles.attribution}>&copy; OpenStreetMap</div>;
 
 ZoneSymbol.propTypes = {
   size: PropTypes.string,
@@ -61,13 +63,11 @@ ZoneSymbol.defaultProps = {
   size: '200px',
 };
 
-const RouteMap = props => {
+const RouteMap = (props) => {
   const mapStyle = {
     width: props.mapOptions.width,
     height: props.mapOptions.height,
   };
-
-  const Attribution = () => <div className={styles.attribution}>&copy; OpenStreetMap</div>;
 
   const scaleStyle = {
     fontSize: `${props.configuration.scaleFontSize ? props.configuration.scaleFontSize : 12}px`,
@@ -90,12 +90,14 @@ const RouteMap = props => {
           mapOptions={props.mapOptions}
           mapComponents={props.mapComponents}
           configuration={props.configuration}
-          alphaChannel={props.alphaChannel}>
+          alphaChannel={props.alphaChannel}
+        >
           {props.projectedTerminuses.map((terminus, index) => (
             <ItemFixed
               key={index}
               top={terminus.y - TERMINUS_SIZE / 2}
-              left={terminus.x - TERMINUS_SIZE / 2}>
+              left={terminus.x - TERMINUS_SIZE / 2}
+            >
               <TerminusSymbol size={TERMINUS_SIZE} />
             </ItemFixed>
           ))}
@@ -104,7 +106,8 @@ const RouteMap = props => {
               key={index}
               top={stop.y - STOP_RADIUS}
               left={stop.x - STOP_RADIUS}
-              allowCollision>
+              allowCollision
+            >
               <StopSymbol routes={stop.routes} size={STOP_RADIUS * 2} />
             </ItemFixed>
           ))}
@@ -112,7 +115,8 @@ const RouteMap = props => {
             <ItemFixed
               key={index}
               top={station.y - TERMINAL_SIZE / 2}
-              left={station.x - TERMINAL_SIZE / 2}>
+              left={station.x - TERMINAL_SIZE / 2}
+            >
               <TerminalSymbol
                 nameFi={station.nameFi}
                 nameSv={station.nameSe}
@@ -129,12 +133,17 @@ const RouteMap = props => {
               distance={0}
               allowHidden
               anglePriority={1}
-              angle={intermediate.angle}>
-              <IntermediateLabel label={intermediate.label} configuration={props.configuration} />
+              angle={intermediate.angle}
+            >
+              <IntermediateLabel
+                trunkRouteIds={props.trunkRouteIds}
+                label={intermediate.label}
+                configuration={props.configuration}
+              />
             </ItemPositioned>
           ))}
           {props.projectedIntermediates
-            .filter(intermediate => !!intermediate.oneDirectionalAngle)
+            .filter((intermediate) => !!intermediate.oneDirectionalAngle)
             .map((intermediate, index) => {
               const { transformedX, transformedY } = getTransformedCoord(
                 intermediate.x,
@@ -149,13 +158,14 @@ const RouteMap = props => {
                   top={transformedY - (ARROW_SIZE + 2) / 2}
                   left={transformedX - (ARROW_SIZE + 2) / 2}
                   transform={intermediate.oneDirectionalAngle}
-                  fixedSize={ARROW_SIZE + 2}>
+                  fixedSize={ARROW_SIZE + 2}
+                >
                   <DirectionArrow size={ARROW_SIZE} />
                 </ItemFixed>
               );
             })}
           {props.projectedStations
-            .filter(station => station.mode === '06' || station.mode === '12')
+            .filter((station) => station.mode === '06' || station.mode === '12')
             .map((name, index) => (
               <ItemPositioned
                 key={index}
@@ -166,7 +176,8 @@ const RouteMap = props => {
                 maxDistance={40}
                 angle={45}
                 distancePriority={6}
-                alphaOverlapPriority={0.1}>
+                alphaOverlapPriority={0.1}
+              >
                 <StationName
                   nameFi={name.nameFi}
                   nameSe={name.nameSe}
@@ -190,13 +201,15 @@ const RouteMap = props => {
               distance={10}
               anchorWidth={1}
               distancePriority={terminus.lines.length > 5 ? 4 : 16}
-              angle={45}>
+              angle={45}
+            >
               <TerminusLabel
                 lines={terminus.lines}
                 nameFi={terminus.nameFi}
                 nameSe={terminus.nameSe}
                 type={terminus.type}
                 configuration={props.configuration}
+                trunkRouteIds={props.trunkRouteIds}
               />
             </ItemPositioned>
           ))}
@@ -257,6 +270,7 @@ const StopType = PropTypes.shape({
   routes: PropTypes.arrayOf(
     PropTypes.shape({
       routeId: PropTypes.string.isRequired,
+      routeIdParsed: PropTypes.string.isRequired,
       mode: PropTypes.string.isRequired,
     }),
   ).isRequired,
@@ -281,6 +295,7 @@ RouteMap.propTypes = {
   mapComponents: PropTypes.object.isRequired, // eslint-disable-line
   pxPerMeterRatio: PropTypes.number.isRequired,
   configuration: PropTypes.shape(ConfigurationOptionsProps).isRequired,
+  trunkRouteIds: PropTypes.array.isRequired,
 };
 
 export default RouteMap;

@@ -12,6 +12,14 @@ class Matrix {
     this.mapComponents = mapComponents;
 
     this.mapStyle = hslMapStyle.generateStyle({
+      sourcesUrl: process.env.DIGITRANSIT_URL,
+      queryParams: [
+        {
+          url: process.env.DIGITRANSIT_URL,
+          name: 'digitransit-subscription-key',
+          value: process.env.DIGITRANSIT_APIKEY,
+        },
+      ],
       components: {
         ...mapComponents,
         base: { enabled: false },
@@ -23,7 +31,7 @@ class Matrix {
 
   initialize(callback) {
     const byteArray = new Int8Array(this.mapOptions.height * this.mapOptions.width);
-    fetchMap(this.mapOptions, this.mapStyle, this.mapOptions.scale).then(res => {
+    fetchMap(this.mapOptions, this.mapStyle, this.mapOptions.scale).then((res) => {
       console.info('fetched bit array map');
       const canvas = document.createElement('canvas');
       canvas.width = this.mapOptions.width;
