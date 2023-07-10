@@ -17,7 +17,7 @@ let browser = null;
 let currentJob = null;
 
 const outputPath = path.join(__dirname, '..', 'output');
-const pdfPath = id => path.join(outputPath, `${id}.pdf`);
+const pdfPath = (id) => path.join(outputPath, `${id}.pdf`);
 
 async function initialize() {
   browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
@@ -35,19 +35,19 @@ async function renderComponent(options) {
   props.id = id;
   const page = await browser.newPage();
 
-  page.on('error', async error => {
+  page.on('error', async (error) => {
     await page.close();
     await browser.close();
     onError(error);
   });
 
   // Puppeteer error logs.
-  page.on('pageerror', error => {
+  page.on('pageerror', (error) => {
     onError(error);
   });
 
   // Puppeteer console.
-  page.on('console', msg => {
+  page.on('console', (msg) => {
     if (['warning', 'log'].includes(msg.type())) {
       onInfo(`Console(${msg.type()}): ${msg.text()}`);
     }
@@ -115,9 +115,11 @@ async function renderComponentRetry(options) {
         await initialize();
       }
 
+      /* eslint-disable no-promise-executor-return */
       const timeout = new Promise((resolve, reject) =>
         setTimeout(reject, RENDER_TIMEOUT, new Error('Render timeout')),
       );
+      /* eslint-enable no-promise-executor-return */
 
       await Promise.race([renderComponent(options), timeout]);
       onInfo('Rendered successfully');
@@ -141,13 +143,13 @@ async function generate(options) {
   const { id } = options;
   currentJob = id;
 
-  const onInfo = message => {
+  const onInfo = (message) => {
     const date = new Date().toUTCString();
     console.log(`${date} ${id}: ${message}`); // eslint-disable-line no-console
     addEvent({ posterId: id, type: 'INFO', message });
   };
 
-  const onError = error => {
+  const onError = (error) => {
     const date = new Date().toUTCString();
     console.error(`${date} ${id}: ${error.message} ${error.stack}`); // eslint-disable-line no-console
     addEvent({ posterId: id, type: 'ERROR', message: error.message });
@@ -176,7 +178,7 @@ const queueScheduler = new QueueScheduler('generator', { connection: bullRedisCo
 // Worker implementation
 const worker = new Worker(
   'generator',
-  async job => {
+  async (job) => {
     const { options } = job.data;
     await generate(options);
   },
@@ -185,11 +187,11 @@ const worker = new Worker(
 
 console.log('Worker ready for jobs!');
 
-worker.on('active', job => {
+worker.on('active', (job) => {
   console.log(`Started to process ${job.id}`);
 });
 
-worker.on('completed', job => {
+worker.on('completed', (job) => {
   console.log(`${job.id} has completed!`);
 });
 
@@ -202,7 +204,7 @@ worker.on('drained', () => console.log('Job queue empty! Waiting for new jobs...
 // While bullmq doesn't support cancelling the jobs, this helper will do it by closing the browser.
 const cancelSignalRedis = new Redis(REDIS_CONNECTION_STRING);
 
-cancelSignalRedis.subscribe('cancel', err => {
+cancelSignalRedis.subscribe('cancel', (err) => {
   if (err) {
     console.error('Failed to start listening to cancellation signals: %s', err.message);
   } else {

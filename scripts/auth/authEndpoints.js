@@ -5,7 +5,7 @@ const { DOMAINS_ALLOWED_TO_LOGIN, ROUTEMAP_TEST_GROUP } = require('../../constan
 
 const allowedDomains = DOMAINS_ALLOWED_TO_LOGIN.split(',');
 
-const hasAllowedDomain = async userInfo => {
+const hasAllowedDomain = async (userInfo) => {
   const groupNames = get(userInfo, 'groups');
   const domain = last(userInfo.email.toLowerCase().split('@')) || '';
 

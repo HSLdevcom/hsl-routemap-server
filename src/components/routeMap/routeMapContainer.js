@@ -23,7 +23,7 @@ import { Matrix } from '../../util/MapAlphaChannelMatrix';
 import routeGeneralizer from '../../util/routeGeneralizer';
 import RouteMap from './routeMap';
 
-const mapPositionMapper = mapProps(props => {
+const mapPositionMapper = mapProps((props) => {
   const { mapOptions, configuration } = props;
 
   const viewport = new PerspectiveMercatorViewport({
@@ -161,7 +161,7 @@ const nearbyTerminals = gql`
   }
 `;
 
-const terminalMapper = mapProps(props => {
+const terminalMapper = mapProps((props) => {
   const { data, routeFilter } = props;
 
   // Whether to use filter or not
@@ -175,8 +175,8 @@ const terminalMapper = mapProps(props => {
     ? data.terminus.nodes.reduce((value, terminus) => {
         const filteredTerminus = {
           ...terminus,
-          lines: terminus.lines.filter(l => {
-            return routeFilter.some(filterObj => {
+          lines: terminus.lines.filter((l) => {
+            return routeFilter.some((filterObj) => {
               if (filterObj.idParsed) {
                 const trimmedId = trimRouteId(l);
                 return filterObj.idParsed === trimmedId;
@@ -190,9 +190,9 @@ const terminalMapper = mapProps(props => {
       }, [])
     : data.terminus.nodes;
   const trunkRouteIds = [];
-  data.stopGroups.nodes.forEach(sg => {
-    sg.stops.nodes.forEach(stop => {
-      stop.routeSegments.nodes.forEach(routeSegmentNode => {
+  data.stopGroups.nodes.forEach((sg) => {
+    sg.stops.nodes.forEach((stop) => {
+      stop.routeSegments.nodes.forEach((routeSegmentNode) => {
         const routeId = trimRouteId(routeSegmentNode.routeId).trim();
         const line = routeSegmentNode.line.nodes[0];
         const trunkRoute = line && line.trunkRoute === '1';
@@ -207,8 +207,8 @@ const terminalMapper = mapProps(props => {
     ? data.intermediates.nodes.reduce((value, intermediate) => {
         const filteredIntermediate = {
           ...intermediate,
-          routes: intermediate.routes.filter(r => {
-            return routeFilter.some(filterObj => {
+          routes: intermediate.routes.filter((r) => {
+            return routeFilter.some((filterObj) => {
               if (filterObj.idParsed) {
                 const trimmedId = trimRouteId(r);
                 return filterObj.idParsed === trimmedId;
@@ -225,17 +225,17 @@ const terminalMapper = mapProps(props => {
   // Remove stops not relating to selected routes.
   const stops = filter
     ? data.stopGroups.nodes.reduce((value, stopGroup) => {
-        const routeSegments = flatMap(stopGroup.stops.nodes, node => node.routeSegments.nodes);
-        const routeIds = routeSegments.map(routeSegment => {
+        const routeSegments = flatMap(stopGroup.stops.nodes, (node) => node.routeSegments.nodes);
+        const routeIds = routeSegments.map((routeSegment) => {
           return {
             routeId: routeSegment.routeId,
             routeIdParsed: routeSegment.route.nodes[0].routeIdParsed,
           };
         });
         if (
-          routeIds.some(routeStrings => {
+          routeIds.some((routeStrings) => {
             return routeFilter.some(
-              filterObj =>
+              (filterObj) =>
                 filterObj.id === routeStrings.routeId ||
                 filterObj.idParsed === routeStrings.routeIdParsed ||
                 filterObj === routeStrings.routeId,
@@ -255,7 +255,7 @@ const terminalMapper = mapProps(props => {
     width: props.width,
     height: props.height,
   });
-  const projectedStations = stations.map(stop => {
+  const projectedStations = stations.map((stop) => {
     const [x, y] = viewport.project([parseFloat(stop.lon), parseFloat(stop.lat)]);
 
     return {
@@ -268,17 +268,17 @@ const terminalMapper = mapProps(props => {
   });
 
   const projectedStops = stops
-    .map(stop => {
+    .map((stop) => {
       const [x, y] = viewport.project([parseFloat(stop.lon), parseFloat(stop.lat)]);
       return {
         x,
         y,
-        routes: flatMap(stop.stops.nodes, node =>
+        routes: flatMap(stop.stops.nodes, (node) =>
           node.routeSegments.nodes
-            .filter(routeSegment => !isNumberVariant(routeSegment.routeId))
-            .filter(routeSegment => !isDropOffOnly(routeSegment))
-            .filter(routeSegment => routeSegment.route.nodes.length)
-            .map(routeSegment => ({
+            .filter((routeSegment) => !isNumberVariant(routeSegment.routeId))
+            .filter((routeSegment) => !isDropOffOnly(routeSegment))
+            .filter((routeSegment) => routeSegment.route.nodes.length)
+            .map((routeSegment) => ({
               routeId: trimRouteId(routeSegment.routeId),
               routeIdParsed: routeSegment.route.nodes[0].routeIdParsed,
               destinationFi: routeSegment.route.nodes[0].destinationFi,
@@ -292,32 +292,32 @@ const terminalMapper = mapProps(props => {
         ).sort(routeCompare),
       };
     })
-    .filter(stop => stop.routes.length);
+    .filter((stop) => stop.routes.length);
 
   const projectedIntermediates = intermediates
-    .map(intermediate => ({
+    .map((intermediate) => ({
       ...intermediate,
       routes: intermediate.routes.filter(
-        id => !isRailRoute(id) && !isSubwayRoute(id) && id !== null,
+        (id) => !isRailRoute(id) && !isSubwayRoute(id) && id !== null,
       ),
     }))
-    .map(intermediate => ({
+    .map((intermediate) => ({
       ...intermediate,
-      label: routeGeneralizer(intermediate.routes.map(id => trimRouteId(id))),
+      label: routeGeneralizer(intermediate.routes.map((id) => trimRouteId(id))),
     }))
     .filter(
-      intermediate =>
+      (intermediate) =>
         intermediate.label.length > 0 &&
         (intermediate.label.length < 50 ||
           (intermediate.length > 250 && intermediate.label.length < 100) ||
           intermediate.length > 500),
     )
-    .map(intermediate => ({
+    .map((intermediate) => ({
       ...intermediate,
       angle: getMostCommonAngle(intermediate.angles),
       oneDirectionalAngle: getOneDirectionalAngle(intermediate.angles),
     }))
-    .map(intermediate => {
+    .map((intermediate) => {
       const [x, y] = viewport.project([parseFloat(intermediate.lon), parseFloat(intermediate.lat)]);
       return {
         ...intermediate,
@@ -327,18 +327,18 @@ const terminalMapper = mapProps(props => {
     });
 
   const projectedTerminuses = terminuses
-    .map(terminus => {
+    .map((terminus) => {
       const [x, y] = viewport.project([parseFloat(terminus.lon), parseFloat(terminus.lat)]);
 
       return {
         ...terminus,
-        lines: terminus.lines.filter(id => !isRailRoute(id) && !isSubwayRoute(id)),
+        lines: terminus.lines.filter((id) => !isRailRoute(id) && !isSubwayRoute(id)),
         type: getRouteType(terminus.type),
         x,
         y,
       };
     })
-    .filter(terminus => terminus.lines.length > 0);
+    .filter((terminus) => terminus.lines.length > 0);
 
   const mapOptions = {
     center: [props.longitude, props.latitude],
@@ -363,8 +363,8 @@ const terminalMapper = mapProps(props => {
   const projectedSymbols = [];
   const { zoneSymbols } = props.mapOptions;
   if (zoneSymbols) {
-    Object.keys(zoneSymbols).forEach(zone => {
-      zoneSymbols[zone].forEach(symbol => {
+    Object.keys(zoneSymbols).forEach((zone) => {
+      zoneSymbols[zone].forEach((symbol) => {
         const [sy, sx] = viewport.project([symbol[0], symbol[1]]);
         projectedSymbols.push({ zone, sx, sy, size: props.mapOptions.zoneSymbolSize });
       });
@@ -392,7 +392,7 @@ const hoc = compose(
   apolloWrapper(terminalMapper),
   compose(
     withStateHandlers(null, {
-      onData: state => data => ({
+      onData: (state) => (data) => ({
         // eslint-disable-line
         alphaChannel: data,
       }),
@@ -405,14 +405,14 @@ const hoc = compose(
           this.props.mapComponents,
           this.props.configuration.routeFilter,
         );
-        alphaChannelMatrix.initialize(alphaChannelByteArray => {
+        alphaChannelMatrix.initialize((alphaChannelByteArray) => {
           this.props.onData(alphaChannelByteArray);
           renderQueue.remove(this);
         });
       },
     }),
     branch(
-      props => !props.alphaChannel,
+      (props) => !props.alphaChannel,
       () => () => null,
     ),
   ),

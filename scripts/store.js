@@ -6,7 +6,7 @@ const knex = require('knex')(config);
 
 function convertKeys(object, converter) {
   const obj = {};
-  Object.keys(object).forEach(key => {
+  Object.keys(object).forEach((key) => {
     obj[converter(key)] = object[key];
   });
   return obj;
@@ -30,7 +30,7 @@ async function getBuilds() {
     .orderBy('build.created_at', 'desc')
     .groupBy('build.id');
 
-  return rows.map(row => convertKeys(row, camelCase));
+  return rows.map((row) => convertKeys(row, camelCase));
 }
 
 async function getBuild({ id }) {
@@ -69,8 +69,8 @@ async function getBuild({ id }) {
     .groupBy('poster.id');
 
   const build = convertKeys(buildRow, camelCase);
-  const posters = posterRows.map(row => convertKeys(row, camelCase));
-  return Object.assign({}, build, { posters });
+  const posters = posterRows.map((row) => convertKeys(row, camelCase));
+  return { ...build, posters};
 }
 
 async function addBuild({ title }) {
@@ -80,16 +80,12 @@ async function addBuild({ title }) {
 }
 
 async function updateBuild({ id, status }) {
-  await knex('build')
-    .where({ id })
-    .update({ status, updated_at: knex.fn.now() });
+  await knex('build').where({ id }).update({ status, updated_at: knex.fn.now() });
   return { id };
 }
 
 async function removeBuild({ id }) {
-  await knex('build')
-    .where({ id })
-    .update({ status: 'REMOVED', updated_at: knex.fn.now() });
+  await knex('build').where({ id }).update({ status: 'REMOVED', updated_at: knex.fn.now() });
   return { id };
 }
 
@@ -121,17 +117,13 @@ async function addPoster({ buildId, props }) {
       snakeCase,
     ),
   );
-  await knex('build')
-    .where('id', buildId)
-    .update({ updated_at: knex.fn.now() });
+  await knex('build').where('id', buildId).update({ updated_at: knex.fn.now() });
 
   return { id };
 }
 
 async function updatePoster({ id, status }) {
-  await knex('poster')
-    .where({ id })
-    .update({ status, updated_at: knex.fn.now() });
+  await knex('poster').where({ id }).update({ status, updated_at: knex.fn.now() });
   return { id };
 }
 
@@ -140,9 +132,7 @@ async function removePoster({ id }) {
     .returning('build_id')
     .where({ id })
     .update({ status: 'REMOVED', updated_at: knex.fn.now() });
-  await knex('build')
-    .where('id', buildId[0].build_id)
-    .update({ updated_at: knex.fn.now() });
+  await knex('build').where('id', buildId[0].build_id).update({ updated_at: knex.fn.now() });
   return { id };
 }
 
@@ -160,48 +150,6 @@ async function addEvent({ posterId = null, buildId = null, type, message }) {
   );
 }
 
-async function getConfig() {
-  const configs = await knex('routepath_import_config')
-    .select('*')
-    .where({ name: 'default' });
-  if (configs.length === 1) {
-    return configs[0];
-  }
-  return null;
-}
-
-async function setDateConfig(date) {
-  const oldConfig = await getConfig();
-  if (oldConfig) {
-    await knex('routepath_import_config')
-      .where({ name: 'default' })
-      .update({
-        target_date: date,
-        status: 'PENDING',
-        updated_at: knex.fn.now(),
-      });
-  } else {
-    await knex('routepath_import_config').insert({
-      name: 'default',
-      status: 'PENDING',
-      target_date: date,
-    });
-  }
-  return getConfig();
-}
-
-async function setStatusConfig(status) {
-  const oldConfig = await getConfig();
-  if (oldConfig) {
-    await knex('routepath_import_config')
-      .where({ name: 'default' })
-      .update({ status, updated_at: knex.fn.now() });
-  } else {
-    await knex('routepath_import_config').insert({ status, name: 'default' });
-  }
-  return getConfig();
-}
-
 module.exports = {
   migrate,
   getBuilds,
@@ -214,7 +162,4 @@ module.exports = {
   updatePoster,
   removePoster,
   addEvent,
-  setDateConfig,
-  setStatusConfig,
-  getConfig,
 };
