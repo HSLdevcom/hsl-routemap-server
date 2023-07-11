@@ -21,7 +21,7 @@ const TerminusLabel = ({ nameFi, nameSe, lines, configuration, trunkRouteIds }) 
     return arr.slice(1).reduce((xs, x) => xs.concat([sep, x]), [arr[0]]);
   }
 
-  const routes = routeGeneralizer(lines.map(id => trimRouteId(id)));
+  const routes = routeGeneralizer(lines.map((id) => trimRouteId(id)));
   return (
     <div className={style.label} style={terminusStyle}>
       {(nameFi || nameSe) && (

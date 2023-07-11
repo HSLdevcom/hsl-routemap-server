@@ -37,7 +37,7 @@ const client = new ApolloClient({
 class App extends Component {
   componentDidMount() {
     if (this.root) {
-      renderQueue.onEmpty(error => {
+      renderQueue.onEmpty((error) => {
         if (error) {
           handleError(error);
           return;
@@ -69,9 +69,10 @@ class App extends Component {
       <div
         id="rootImageElement"
         style={rootStyle}
-        ref={ref => {
+        ref={(ref) => {
           this.root = ref;
-        }}>
+        }}
+      >
         <ApolloProvider client={client}>
           <RouteMap {...props} /> {/* eslint-disable-line react/jsx-props-no-spreading */}
         </ApolloProvider>

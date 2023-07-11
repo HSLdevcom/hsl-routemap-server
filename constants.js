@@ -9,12 +9,12 @@ const SECRETS_PATH = '/run/secrets/';
 const secrets = (fs.existsSync(SECRETS_PATH) && fs.readdirSync(SECRETS_PATH)) || [];
 
 const secretsEnv = mapValues(process.env, (value, key) => {
-  const matchingSecrets = secrets.filter(secretFile => secretFile.startsWith(key));
+  const matchingSecrets = secrets.filter((secretFile) => secretFile.startsWith(key));
 
   const currentSecret =
     orderBy(
       matchingSecrets,
-      secret => {
+      (secret) => {
         const secretVersion = parseInt(secret[secret.length - 1], 10);
         return isNaN(secretVersion) ? 0 : secretVersion;
       },

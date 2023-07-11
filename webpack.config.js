@@ -1,11 +1,17 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 module.exports = {
+  mode: 'production',
   devtool: 'source-map',
   entry: ['./src/index.js'],
-  plugins: [new HtmlWebpackPlugin({ template: 'index.ejs' }), new Dotenv({ systemvars: true })],
+  plugins: [
+    new HtmlWebpackPlugin({ template: 'index.ejs' }),
+    new Dotenv({ systemvars: true }),
+    new ESLintPlugin(),
+  ],
   resolve: {
     modules: ['node_modules', 'src'],
   },
@@ -16,12 +22,6 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.js$/,
-        loader: 'eslint-loader',
-        enforce: 'pre',
-        exclude: /node_modules/,
-      },
       {
         test: /\.js$/,
         loader: 'babel-loader',
@@ -39,8 +39,7 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              modules: true,
-              localIdentName: '[name]_[local]_[hash:base64:5]',
+              modules: { localIdentName: '[name]_[local]_[hash:base64:5]' },
             },
           },
         ],
