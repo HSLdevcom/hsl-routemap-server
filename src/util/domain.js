@@ -1,5 +1,6 @@
 import busIcon from 'icons/icon_bus.svg';
 import tramIcon from 'icons/icon_tram.svg';
+import lRailIcon from 'icons/icon_lrail.svg';
 import railIcon from 'icons/icon_rail.svg';
 import subwayIcon from 'icons/icon_subway.svg';
 import ferryIcon from 'icons/icon_ferry.svg';
@@ -87,6 +88,7 @@ function isDropOffOnly({ pickupDropoffType }) {
 const colorsByMode = {
   TRUNK: '#ff6319',
   TRAM: '#00985f',
+  L_RAIL: '##00b2a9',
   RAIL: '#8c4799',
   SUBWAY: '#ff6319',
   BUS: '#007AC9',
@@ -96,6 +98,7 @@ const colorsByMode = {
 const iconsByMode = {
   BUS: busIcon,
   TRAM: tramIcon,
+  L_RAIL: lRailIcon,
   RAIL: railIcon,
   SUBWAY: subwayIcon,
   FERRY: ferryIcon,
