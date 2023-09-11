@@ -6,7 +6,6 @@ import subwayIcon from 'icons/icon_subway.svg';
 import ferryIcon from 'icons/icon_ferry.svg';
 import trunkIcon from 'icons/icon_trunk.svg';
 
-const TRUNK_ROUTES = ['550', '560', '500', '510', '200', '570', '20', '30', '40'];
 const RAIL_ROUTE_ID_REGEXP = /^300[12]/;
 const SUBWAY_ROUTE_ID_REGEXP = /^31/;
 
@@ -88,7 +87,7 @@ function isDropOffOnly({ pickupDropoffType }) {
 const colorsByMode = {
   TRUNK: '#ff6319',
   TRAM: '#00985f',
-  L_RAIL: '##00b2a9',
+  L_RAIL: '#00b2a9',
   RAIL: '#8c4799',
   SUBWAY: '#ff6319',
   BUS: '#007AC9',
@@ -130,5 +129,4 @@ export {
   getColor,
   getIcon,
   getRouteType,
-  routeTypes,
 };
