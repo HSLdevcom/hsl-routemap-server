@@ -5,14 +5,17 @@ import { colorsByMode } from 'util/domain';
 
 const strokeWidth = 1;
 
-const StopSymbol = props => {
+const StopSymbol = (props) => {
   const modes = [...new Set(props.routes.map(({ mode }) => mode))];
   const colors = [];
-  if (props.routes.some(route => route.trunkRoute)) {
+  if (props.routes.some((route) => route.trunkRoute)) {
     colors.push(colorsByMode.TRUNK);
   }
   if (modes.includes('TRAM')) {
     colors.push(colorsByMode.TRAM);
+  }
+  if (modes.includes('L_RAIL')) {
+    colors.push(colorsByMode.L_RAIL);
   }
   if (modes.includes('RAIL')) {
     colors.push(colorsByMode.RAIL);
@@ -23,7 +26,7 @@ const StopSymbol = props => {
   if (modes.includes('FERRY')) {
     colors.push(colorsByMode.FERRY);
   }
-  if (modes.includes('BUS') && props.routes.some(route => !route.trunkRoute)) {
+  if (modes.includes('BUS') && props.routes.some((route) => !route.trunkRoute)) {
     colors.push(colorsByMode.BUS);
   }
 
