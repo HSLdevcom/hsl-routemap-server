@@ -38,13 +38,18 @@ const StopSymbol = (props) => {
 
   return (
     <svg width={props.size} height={props.size} style={{ display: 'block' }}>
-      <circle cx={props.size / 2} cy={props.size / 2} r={outlines[0].radius} fill="#fff" />
+      <circle
+        cx={props.size / 2}
+        cy={props.size / 2}
+        r={outlines[0].radius !== -1 ? outlines[0].radius : 2.5}
+        fill="#fff"
+      />
       {outlines.map(({ radius, color }, index) => (
         <circle
           key={index}
           cx={props.size / 2}
           cy={props.size / 2}
-          r={radius}
+          r={radius !== -1 ? radius : 2.5}
           stroke={color}
           strokeWidth={strokeWidth}
           fill="none"
