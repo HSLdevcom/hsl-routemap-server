@@ -87,7 +87,7 @@ function isDropOffOnly({ pickupDropoffType }) {
 const colorsByMode = {
   TRUNK: '#ff6319',
   TRAM: '#00985f',
-  L_RAIL: '#00b2a9',
+  L_RAIL: '#0098A1',
   RAIL: '#8c4799',
   SUBWAY: '#ff6319',
   BUS: '#007AC9',
