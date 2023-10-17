@@ -4,8 +4,13 @@ import PropTypes from 'prop-types';
 class ItemFixed extends Component {
   constructor(props) {
     super(props);
-    this.state = { top: props.top, left: props.left };
+    this.state = { top: props.top, left: props.left, isMounted: false };
     this.visible = true;
+    this.root = React.createRef();
+  }
+
+  componentDidMount() {
+    this.setState({ isMounted: true });
   }
 
   setPosition(top, left) {
@@ -46,10 +51,11 @@ class ItemFixed extends Component {
 
     return (
       <div
-        ref={ref => {
+        ref={(ref) => {
           this.root = ref;
         }}
-        style={style}>
+        style={style}
+      >
         {this.props.children}
       </div>
     );
