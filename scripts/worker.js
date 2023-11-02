@@ -89,11 +89,14 @@ async function renderComponent(options) {
     timeout: 60000,
   };
 
-  const contents = await page.pdf(printOptions);
-
-  await fs.outputFile(pdfPath(id), contents);
-  await page.close();
-  await uploadPosterToCloud(pdfPath(id));
+  try {
+    const contents = await page.pdf(printOptions);
+    await fs.outputFile(pdfPath(id), contents);
+    await page.close();
+    await uploadPosterToCloud(pdfPath(id));
+  } catch (e) {
+    throw new Error('PDF Generation failed', e);
+  }
 }
 
 async function renderComponentRetry(options) {
