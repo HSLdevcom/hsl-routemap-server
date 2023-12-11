@@ -10,6 +10,7 @@ class ItemPositioned extends Component {
       left: props.x,
       visible: props.visible || !props.allowHidden,
     };
+    this.root = React.createRef();
   }
 
   setPosition(top, left, visible) {
@@ -59,10 +60,11 @@ class ItemPositioned extends Component {
     if (this.state.visible) {
       return (
         <div
-          ref={ref => {
+          ref={(ref) => {
             this.root = ref;
           }}
-          style={style}>
+          style={style}
+        >
           {this.props.children}
         </div>
       );
