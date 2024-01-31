@@ -188,11 +188,16 @@ const RouteMap = (props) => {
             ))}
           {projectedSymbols &&
             projectedSymbols.length > 0 &&
-            projectedSymbols.map((symbol, index) => (
-              <ItemFixed key={index} left={symbol.sy} top={symbol.sx}>
-                <ZoneSymbol size={symbol.size} zone={symbol.zone} />
-              </ItemFixed>
-            ))}
+            projectedSymbols.map((symbol, index) => {
+              const matchValues = symbol.size.match(/\d+/);
+              const symbolSizeNumber = matchValues ? parseInt(matchValues[0], 10) : null;
+              const offset = symbolSizeNumber ? symbolSizeNumber / 2 : 0;
+              return (
+                <ItemFixed key={index} left={symbol.sy - offset} top={symbol.sx - offset}>
+                  <ZoneSymbol size={symbol.size} zone={symbol.zone} />
+                </ItemFixed>
+              );
+            })}
           {props.projectedTerminuses.map((terminus, index) => (
             <ItemPositioned
               key={index}
