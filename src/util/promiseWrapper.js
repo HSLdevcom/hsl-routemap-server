@@ -1,59 +1,50 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import renderQueue from 'util/renderQueue';
 
-const hocFactory = propName => WrappedComponent =>
-  class PromiseWrapper extends Component {
-    constructor(props) {
-      super(props);
-      this.state = { loading: !!props[propName] };
-    }
+const hocFactory = (propName) => (WrappedComponent) => (props) => {
+  const [state, setState] = useState({
+    loading: !!props[propName],
+    value: null,
+    error: null,
+  });
 
-    componentDidMount() {
-      if (this.props[propName]) {
-        this.handlePromise(this.props[propName]);
-      }
-    }
+  useEffect(() => {
+    let isMounted = true;
+    const promise = props[propName];
 
-    componentWillReceiveProps(nextProps) {
-      if (nextProps[propName] && nextProps[propName] !== this.props[propName]) {
-        this.setState({ loading: true });
-        this.handlePromise(nextProps[propName]);
-      }
-    }
-
-    componentWillUnmount() {
-      this.promise = null;
-    }
-
-    handlePromise(promise) {
-      this.promise = promise;
+    if (promise) {
+      setState((prevState) => ({ ...prevState, loading: true }));
       renderQueue.add(promise);
+
       promise
-        .then(value => {
-          const callback = () => renderQueue.remove(promise);
-          if (this.promise !== promise) {
-            callback();
-          } else {
-            this.setState({ value, loading: false }, callback);
+        .then((value) => {
+          if (isMounted) {
+            setState({ value, loading: false, error: null });
+            renderQueue.remove(promise);
           }
         })
-        .catch(error => {
-          const callback = () => renderQueue.remove(promise, { error });
-          if (this.promise !== promise) {
-            callback();
-          } else {
-            this.setState({ error, loading: false }, callback);
+        .catch((error) => {
+          if (isMounted) {
+            setState({ error, loading: false });
+            renderQueue.remove(promise, { error });
           }
         });
     }
 
-    render() {
-      if (this.state.loading || this.state.error) {
-        return null;
-      }
-      const props = { ...this.props, [propName]: this.state.value };
-      return <WrappedComponent {...props} />;
-    }
-  };
+    return () => {
+      isMounted = false;
+      renderQueue.remove(promise);
+    };
+  }, [props[propName]]);
+
+  const { loading, error, value } = state;
+
+  if (loading || error) {
+    return null;
+  }
+
+  const newProps = { ...props, [propName]: value };
+  return <WrappedComponent {...newProps} />;
+};
 
 export default hocFactory;
