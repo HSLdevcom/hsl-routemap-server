@@ -6,6 +6,7 @@ class ItemFixed extends Component {
     super(props);
     this.state = { top: props.top, left: props.left };
     this.visible = true;
+    this.root = React.createRef();
   }
 
   setPosition(top, left) {
@@ -46,10 +47,11 @@ class ItemFixed extends Component {
 
     return (
       <div
-        ref={ref => {
+        ref={(ref) => {
           this.root = ref;
         }}
-        style={style}>
+        style={style}
+      >
         {this.props.children}
       </div>
     );
