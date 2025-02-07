@@ -7,6 +7,9 @@ module.exports = {
   mode: 'production',
   devtool: 'source-map',
   entry: ['./src/index.js'],
+  optimization: {
+    minimize: false,
+  },
   plugins: [
     new HtmlWebpackPlugin({ template: 'index.ejs' }),
     new Dotenv({ systemvars: true }),
