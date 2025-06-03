@@ -30,7 +30,7 @@
     "url": "git+https://github.com/HSLdevcom/hsl-routemap-server.git"
   },
   "author": "",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/HSLdevcom/hsl-routemap-server/issues"
   },
