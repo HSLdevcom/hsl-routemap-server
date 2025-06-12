@@ -1,6 +1,6 @@
 {
   "name": "hsl-routemap-server",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "HSL Routemap server",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "url": "git+https://github.com/HSLdevcom/hsl-routemap-server.git"
   },
   "author": "",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/HSLdevcom/hsl-routemap-server/issues"
   },
@@ -96,13 +96,14 @@
     "pg": "^8.7.3",
     "prop-types": "^15.6.0",
     "puppeteer": "^15.4.1",
-    "react": "16.8.6",
+    "react": "18.2.0",
     "react-apollo": "^2.0.1",
-    "react-dom": "16.8.6",
+    "react-dom": "18.2.0",
     "recompose": "^0.30.0",
     "segseg": "^0.2.2",
     "serve": "^13.0.2",
     "uuid": "^3.1.0",
+    "validator": "^13.15.0",
     "viewport-mercator-project": "^4.1.1"
   }
 }
