@@ -13,6 +13,7 @@ import {
   getAlphaOverflowCost,
   shouldBeVisible,
 } from './costFunctions';
+import { head } from 'lodash';
 
 const timeout = 7 * 24 * 60 * 60 * 1000;
 const iterationsPerFactor = 10;
