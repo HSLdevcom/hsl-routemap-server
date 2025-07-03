@@ -13,10 +13,9 @@ import {
   getAlphaOverflowCost,
   shouldBeVisible,
 } from './costFunctions';
-import { head } from 'lodash';
 
 const timeout = 7 * 24 * 60 * 60 * 1000;
-const iterationsPerFactor = 8;
+const iterationsPerFactor = 10;
 
 const angles = [-6, -3, -1, 0, 1, 3, 6];
 const distances = [-4, -2, -1, 0, 1, 2, 4];
@@ -189,9 +188,9 @@ function optimizePositions(initialPositions, bbox, alphaByteArray, mapOptions, c
     indexes: [],
   };
 
-  const dpi = 300;
+  const defaultDPI = 300;
   const marginMm = 6;
-  const bboxPrintMargin = Math.round((marginMm * dpi) / 25.4);
+  const bboxPrintMargin = Math.round((marginMm * defaultDPI) / 25.4);
 
   const bboxWithMargins = {
     left: bbox.left + bboxPrintMargin,
