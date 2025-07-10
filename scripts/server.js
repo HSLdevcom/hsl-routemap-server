@@ -29,7 +29,7 @@ const {
 } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
 
-const { REDIS_CONNECTION_STRING } = require('../constants');
+const { REDIS_CONNECTION_STRING, GROUP_GENERATE } = require('../constants');
 
 const PORT = 4000;
 
@@ -106,12 +106,40 @@ async function main() {
   });
 
   router.post('/builds', async (ctx) => {
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+
+    if (!authResponse.body.isOk) {
+      ctx.throw(401, 'Not allowed.');
+    }
+
+    if (!authResponse.body.groups.includes(GROUP_GENERATE)) {
+      ctx.throw(403, 'User does not have permission to modify builds.');
+    }
+
     const { title } = ctx.request.body;
     const build = await addBuild({ title });
     ctx.body = build;
   });
 
   router.put('/builds/:id', async (ctx) => {
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+
+    if (!authResponse.body.isOk) {
+      ctx.throw(401, 'Not allowed.');
+    }
+
+    if (!authResponse.body.groups.includes(GROUP_GENERATE)) {
+      ctx.throw(403, 'User does not have permission to modify builds.');
+    }
+
     const { id } = ctx.params;
     const { status } = ctx.request.body;
     const build = await updateBuild({
@@ -122,6 +150,20 @@ async function main() {
   });
 
   router.delete('/builds/:id', async (ctx) => {
+    const authResponse = await authEndpoints.checkExistingSession(
+      ctx.request,
+      ctx.response,
+      ctx.session,
+    );
+
+    if (!authResponse.body.isOk) {
+      ctx.throw(401, 'Not allowed.');
+    }
+
+    if (!authResponse.body.groups.includes(GROUP_GENERATE)) {
+      ctx.throw(403, 'User does not have permission to modify builds.');
+    }
+
     const { id } = ctx.params;
     const build = await removeBuild({ id });
     ctx.body = build;
@@ -143,13 +185,18 @@ async function main() {
     if (!authResponse.body.isOk) {
       ctx.throw(401, 'Not allowed.');
     }
-    const posters = [];
-    for (let i = 0; i < props.length; i++) {
-      // eslint-disable-next-line no-await-in-loop
-      const poster = await generatePoster(buildId, props[i]);
-      posters.push(poster);
+
+    if (!authResponse.body.groups.includes(GROUP_GENERATE)) {
+      ctx.throw(403, 'User does not have permission to generate posters.');
+    } else {
+      const posters = [];
+      for (let i = 0; i < props.length; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        const poster = await generatePoster(buildId, props[i]);
+        posters.push(poster);
+      }
+      ctx.body = posters;
     }
-    ctx.body = posters;
   });
 
   router.post('/cancelPoster', async (ctx) => {
