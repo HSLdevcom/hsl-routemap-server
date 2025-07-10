@@ -66,6 +66,16 @@ const errorHandler = async (ctx, next) => {
   }
 };
 
+const allowedToGenerate = (user) => {
+  if (!user || !user.email) return false;
+
+  if (user.groups && user.groups.includes(GROUP_GENERATE)) {
+    return true;
+  }
+
+  return false;
+};
+
 const authMiddleware = async (ctx, next) => {
   const endpointsNotRequiringAuthentication = ['/login', '/logout', '/session'];
   if (endpointsNotRequiringAuthentication.includes(ctx.path)) {
@@ -82,6 +92,14 @@ const authMiddleware = async (ctx, next) => {
       // Not authenticated, throw 401
       ctx.throw(401);
     } else {
+      // If the request is CRUD, check if the user has privileges to perform the action
+      if (ctx.method !== 'GET' && ctx.method !== 'HEAD') {
+        const user = authResponse.body;
+        if (!allowedToGenerate(user)) {
+          ctx.throw(403, 'User does not have privileges to perform this action.');
+        }
+      }
+
       await next();
     }
   }
@@ -150,20 +168,6 @@ async function main() {
   });
 
   router.delete('/builds/:id', async (ctx) => {
-    const authResponse = await authEndpoints.checkExistingSession(
-      ctx.request,
-      ctx.response,
-      ctx.session,
-    );
-
-    if (!authResponse.body.isOk) {
-      ctx.throw(401, 'Not allowed.');
-    }
-
-    if (!authResponse.body.groups.includes(GROUP_GENERATE)) {
-      ctx.throw(403, 'User does not have permission to modify builds.');
-    }
-
     const { id } = ctx.params;
     const build = await removeBuild({ id });
     ctx.body = build;
