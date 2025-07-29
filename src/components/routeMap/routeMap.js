@@ -9,6 +9,7 @@ import AZone from 'icons/icon-Zone-A';
 import BZone from 'icons/icon-Zone-B';
 import CZone from 'icons/icon-Zone-C';
 import DZone from 'icons/icon-Zone-D';
+import EZone from 'icons/icon-Zone-E';
 
 import { preventFromOverlap } from '../../util/terminals';
 import { getTransformedCoord } from '../../util/arrows';
@@ -43,6 +44,8 @@ const getZoneIcon = (zone, size) => {
       return <CZone size={size} />;
     case 'D':
       return <DZone size={size} />;
+    case 'E':
+      return <EZone size={size} />;
     default:
       return <div />;
   }
