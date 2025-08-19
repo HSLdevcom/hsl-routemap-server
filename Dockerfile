@@ -1,4 +1,4 @@
-FROM node:16-buster-slim
+FROM node:20-bookworm-slim
 
 # This installs the necessary libs to make the bundled version of Chromium that Pupppeteer installs work
 RUN apt-get update \
@@ -12,7 +12,7 @@ RUN apt-get update \
   && mv ./azcopy /usr/bin/ \
   && rm -rf /var/lib/apt/lists/*
 
-ENV WORK /opt/publisher
+ENV WORK=/opt/publisher
 # ENV NODE_ENV production # Cannot use until devdependency list is fixed in package.json
 
 # Create app directory

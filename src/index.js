@@ -1,16 +1,16 @@
 import React from 'react';
-import { render } from 'react-dom';
+import * as ReactDOMClient from 'react-dom/client';
 
 import App from 'components/app';
 import 'styles/base.css';
 
-const root = document.body.appendChild(document.createElement('div'));
-
-render(<App />, root);
+const rootContainer = document.body.appendChild(document.createElement('div'));
+const root = ReactDOMClient.createRoot(rootContainer);
+root.render(<App />);
 
 if (module.hot) {
   module.hot.accept('components/app', () => {
     const NextApp = require('components/app').default; // eslint-disable-line
-    render(<NextApp />, root);
+    root.render(<NextApp />, root);
   });
 }
