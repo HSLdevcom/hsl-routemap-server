@@ -13,19 +13,20 @@ import {
   getAlphaOverflowCost,
   shouldBeVisible,
 } from './costFunctions';
+import { head } from 'lodash';
 
 const timeout = 7 * 24 * 60 * 60 * 1000;
-const iterationsPerFactor = 8;
+const iterationsPerFactor = 10;
 
 const angles = [-6, -3, -1, 0, 1, 3, 6];
 const distances = [-4, -2, -1, 0, 1, 2, 4];
 const factors = [30, 15, 7, 3];
 
-const diffsArray = factors.map(factor =>
+const diffsArray = factors.map((factor) =>
   angles.reduce(
     (prev, angle) => [
       ...prev,
-      ...distances.map(distance => ({ angle: angle * factor, distance: distance * factor })),
+      ...distances.map((distance) => ({ angle: angle * factor, distance: distance * factor })),
     ],
     [],
   ),
@@ -43,9 +44,9 @@ function getCloseByPositions(positions, index, maxDistance) {
       ...pos,
       index: i,
     }))
-    .filter(pos => !pos.allowCollision)
-    .filter(pos => pos.shouldBeVisible || !pos.allowHidden)
-    .filter(pos => {
+    .filter((pos) => !pos.allowCollision)
+    .filter((pos) => pos.shouldBeVisible || !pos.allowHidden)
+    .filter((pos) => {
       if (!pos.allowHidden) return true;
       if (getDistance(pos, positions[index]) < maxDistance * 3) {
         return true;
@@ -88,7 +89,7 @@ function getPlacements(placement, index, diffs, bbox, alphaByteArray, configurat
   const { positions, indexes } = placement;
 
   return diffs
-    .map(diff => {
+    .map((diff) => {
       const updatedPosition = updatePosition(positions[index], diff);
 
       if (updatedPosition) {
@@ -108,8 +109,8 @@ function getPlacements(placement, index, diffs, bbox, alphaByteArray, configurat
       }
       return positions.map((position, i) => (i === index ? updatedPosition : position));
     })
-    .filter(updatedPositions => !!updatedPositions)
-    .map(updatedPositions => ({ positions: updatedPositions, indexes: [...indexes, index] }));
+    .filter((updatedPositions) => !!updatedPositions)
+    .map((updatedPositions) => ({ positions: updatedPositions, indexes: [...indexes, index] }));
 }
 
 function comparePlacements(placement, other, bbox, alphaByteArray, closeByPositions) {
@@ -147,11 +148,9 @@ function getNextPlacement(initialPlacement, index, diffs, bbox, alphaByteArray, 
     ];
   }, []);
 
-  const nextPlacement = [
-    initialPlacement,
-    ...placements,
-    ...placementsOverlapping,
-  ].reduce((prev, cur) => comparePlacements(prev, cur, bbox, alphaByteArray, closeByPositions));
+  const nextPlacement = [initialPlacement, ...placements, ...placementsOverlapping].reduce(
+    (prev, cur) => comparePlacements(prev, cur, bbox, alphaByteArray, closeByPositions),
+  );
 
   return nextPlacement;
 }
@@ -186,18 +185,29 @@ function findMostSuitablePosition(initialPlacement, bbox, isOccupied, configurat
 
 function optimizePositions(initialPositions, bbox, alphaByteArray, mapOptions, configuration) {
   const placement = {
-    positions: initialPositions.map(position => updatePosition(position)),
+    positions: initialPositions.map((position) => updatePosition(position)),
     indexes: [],
   };
 
+  const defaultDPI = 300;
+  const marginMm = 6;
+  const bboxPrintMargin = Math.round((marginMm * defaultDPI) / 25.4);
+
+  const bboxWithMargins = {
+    left: bbox.left + bboxPrintMargin,
+    top: bbox.top + bboxPrintMargin,
+    width: bbox.width - bboxPrintMargin * 2,
+    height: bbox.height - bboxPrintMargin * 2,
+  };
+
   const isOccupied = getIfOccupied(alphaByteArray, mapOptions);
-  const positions = findMostSuitablePosition(placement, bbox, isOccupied, configuration);
+  const positions = findMostSuitablePosition(placement, bboxWithMargins, isOccupied, configuration);
 
   const newPlacements = [];
-  positions.forEach(position => {
+  positions.forEach((position) => {
     newPlacements.push({
       ...position,
-      visible: shouldBeVisible(position, isOccupied, bbox, configuration, true),
+      visible: shouldBeVisible(position, isOccupied, bboxWithMargins, configuration, true),
     });
   });
   return newPlacements;

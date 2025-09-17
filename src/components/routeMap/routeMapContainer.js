@@ -407,8 +407,10 @@ const hoc = compose(
         );
         alphaChannelMatrix.initialize((alphaChannelByteArray) => {
           this.props.onData(alphaChannelByteArray);
-          renderQueue.remove(this);
         });
+      },
+      componentDidUpdate() {
+        renderQueue.remove(this);
       },
     }),
     branch(
