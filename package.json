@@ -68,7 +68,7 @@
     "style-loader": "~2",
     "webpack": "~4",
     "webpack-cli": "~4",
-    "webpack-dev-server": "~3",
+    "webpack-dev-server": "~5",
     "worker-loader": "^3.0.8"
   },
   "dependencies": {
