@@ -1,17 +1,16 @@
 FROM node:20-bookworm-slim
 
-RUN set -eux; \
-  apt-get update; \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates curl gnupg wget pdftk fontconfig fonts-liberation supervisor; \
-  install -d -m 0755 /etc/apt/keyrings; \
-  curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg; \
-  chmod a+r /etc/apt/keyrings/google-chrome.gpg; \
-  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list; \
-  apt-get update; \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends google-chrome-stable libxss1; \
-  rm -rf /var/lib/apt/lists/*
-
+# This installs the necessary libs to make the bundled version of Chromium that Pupppeteer installs work
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -yq wget curl gnupg pdftk fontconfig fonts-liberation ca-certificates --no-install-recommends \
+    # This installs the necessary libs to make the bundled version of Chromium that Puppeteer installs work
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -yq google-chrome-stable libxss1 --no-install-recommends \
+  && wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && rm azcopy_v10.tar.gz \
+  && mv ./azcopy /usr/bin/ \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV WORK=/opt/publisher
 # ENV NODE_ENV production # Cannot use until devdependency list is fixed in package.json
@@ -29,7 +28,6 @@ COPY . ${WORK}
 
 ARG BUILD_ENV=prod
 COPY .env.${BUILD_ENV} ${WORK}/.env
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ARG DIGITRANSIT_APIKEY
 ENV DIGITRANSIT_APIKEY=${DIGITRANSIT_APIKEY}
@@ -37,5 +35,11 @@ RUN yarn build
 
 EXPOSE 4000
 
-CMD ./fonts.sh && fc-cache -f -v && exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
-
+CMD \
+  ./fonts.sh && \
+  fc-cache -f -v && \
+  yarn run forever start -c "yarn serve" dist/ && \
+  yarn run forever start -c "yarn server" ./ && \
+  yarn run forever start -c "yarn worker" ./ && \
+  sleep 3 && \
+  yarn run forever -f logs 1
