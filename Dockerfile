@@ -12,12 +12,6 @@ RUN set -eux; \
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends google-chrome-stable libxss1; \
   rm -rf /var/lib/apt/lists/*
 
-RUN set -eux; \
-  curl -fL https://aka.ms/downloadazcopy-v10-linux -o /tmp/azcopy.tar.gz; \
-  mkdir -p /tmp/azcopy; \
-  tar -xzf /tmp/azcopy.tar.gz -C /tmp/azcopy; \
-  install -m 0755 /tmp/azcopy/azcopy_linux_amd64_*/azcopy /usr/local/bin/azcopy; \
-  rm -rf /tmp/azcopy /tmp/azcopy.tar.gz
 
 ENV WORK=/opt/publisher
 # ENV NODE_ENV production # Cannot use until devdependency list is fixed in package.json
