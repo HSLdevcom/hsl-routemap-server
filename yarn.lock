@@ -4964,8 +4964,8 @@ hpack.js@^2.1.6:
     wbuf "^1.1.0"
 
 hsl-map-style@hsldevcom/hsl-map-style#master:
-  version "1.2.2"
-  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/305b1123504d54d28e12298aeb21442f06758309"
+  version "1.2.3"
+  resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/2e247924dde50d3e229ab5cb2650d0d2a56ff66e"
   dependencies:
     lodash "^4.17.4"
 
@@ -9494,11 +9494,6 @@ uuid@^9.0.0:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
   integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
-
-validator@^13.15.0:
-  version "13.15.15"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-13.15.15.tgz#246594be5671dc09daa35caec5689fcd18c6e7e4"
-  integrity sha512-BgWVbCI72aIQy937xbawcs+hrVaN/CZ2UwutgaJ36hGqRrLNM+f5LUT/YPRbo8IV/ASeFzXszezV+y2+rq3l8A==
 
 validator@^13.15.0:
   version "13.15.0"
