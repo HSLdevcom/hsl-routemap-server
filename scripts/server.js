@@ -1,7 +1,6 @@
 const Koa = require('koa');
 const Router = require('koa-router');
 const session = require('koa-session');
-const cors = require('@koa/cors');
 const jsonBody = require('koa-json-body');
 const { get } = require('lodash');
 const { Queue } = require('bullmq');
@@ -40,6 +39,49 @@ const bullRedisConnection = new Redis(REDIS_CONNECTION_STRING, {
 const queue = new Queue('generator', { connection: bullRedisConnection });
 
 const cancelSignalRedis = new Redis(REDIS_CONNECTION_STRING); // New connection to make sure that pub/sub will work correctly.
+
+const createCorsMiddleware = (options = {}) => {
+  const {
+    allowHeaders = [
+      'Accept',
+      'Accept-Language',
+      'Content-Language',
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+    ],
+    allowMethods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials = false,
+  } = options;
+
+  return async (ctx, next) => {
+    const requestOrigin = ctx.get('Origin');
+    if (requestOrigin) {
+      ctx.set('Access-Control-Allow-Origin', requestOrigin);
+    } else if (!credentials) {
+      ctx.set('Access-Control-Allow-Origin', '*');
+    }
+
+    if (credentials) {
+      ctx.set('Access-Control-Allow-Credentials', 'true');
+    }
+
+    ctx.set('Access-Control-Allow-Methods', allowMethods.join(', '));
+    const requestedHeaders = ctx.get('Access-Control-Request-Headers');
+    if (requestedHeaders) {
+      ctx.set('Access-Control-Allow-Headers', requestedHeaders);
+    } else {
+      ctx.set('Access-Control-Allow-Headers', allowHeaders.join(', '));
+    }
+
+    if (ctx.method === 'OPTIONS') {
+      ctx.status = 204;
+      return;
+    }
+
+    await next();
+  };
+};
 
 async function generatePoster(buildId, props) {
   const { id } = await addPoster({ buildId, props });
@@ -284,6 +326,7 @@ async function main() {
 
   router.post('/login', async (ctx) => {
     const authResponse = await authEndpoints.authorize(ctx.request, ctx.response, ctx.session);
+    console.log(JSON.stringify(authResponse.body));
     ctx.session = null;
     if (authResponse.modifiedSession) {
       ctx.session = authResponse.modifiedSession;
@@ -324,11 +367,7 @@ async function main() {
   app
     .use(errorHandler)
     .use(unAuthorizedRouter.routes())
-    .use(
-      cors({
-        credentials: true,
-      }),
-    )
+    .use(createCorsMiddleware({ credentials: true }))
     .use(authMiddleware)
     .use(jsonBody({ fallback: true, limit: '10mb' }))
     .use(router.routes())

@@ -9,20 +9,15 @@ config.devtool = 'eval';
 config.mode = 'development';
 
 if (process.env.HMR === 'true') {
-  config.entry = [
-    `webpack-dev-server/client?http://localhost:${PORT}`,
-    'webpack/hot/dev-server',
-    ...config.entry,
-  ];
   config.plugins = [new webpack.HotModuleReplacementPlugin(), ...config.plugins];
 }
 
 const options = {
   hot: process.env.HMR === 'true',
   historyApiFallback: true,
-  stats: { colors: true },
+  port: PORT,
 };
 
-const server = new WebpackDevServer(webpack(config), options);
+const server = new WebpackDevServer(options, webpack(config));
 
-server.listen(PORT);
+server.start();
