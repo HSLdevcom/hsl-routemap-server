@@ -1,6 +1,6 @@
 {
   "name": "hsl-routemap-server",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "HSL Routemap server",
   "main": "index.js",
   "scripts": {
@@ -79,11 +79,10 @@
     "bullmq": "^1.86.2",
     "dotenv": "^8.0.0",
     "forever": "^4.0.3",
-    "pm2": "^6.0.14",
     "fs-extra": "^8.1.0",
     "graphql": "^0.11.7",
     "graphql-tag": "^2.5.0",
-    "hsl-map-style": "hsldevcom/hsl-map-style#development",
+    "hsl-map-style": "hsldevcom/hsl-map-style#master",
     "ioredis": "^5.0.6",
     "knex": "^2.1.0",
     "koa": "^2.16.4",
@@ -94,6 +93,7 @@
     "node-fetch": "^2.6.7",
     "nodemon": "^3.1.14",
     "pg": "^8.7.3",
+    "pm2": "^6.0.14",
     "prop-types": "^15.6.0",
     "puppeteer": "^24.39.1",
     "react": "18.2.0",
