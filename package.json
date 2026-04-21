@@ -1,6 +1,6 @@
 {
   "name": "hsl-routemap-server",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "HSL Routemap server",
   "main": "index.js",
   "scripts": {
@@ -113,6 +113,6 @@
     "nconf": "0.13.0",
     "minimist": "1.2.8",
     "braces": "3.0.3",
-    "basic-ftp": "5.2.1"
+    "basic-ftp": "5.3.0"
   }
 }
