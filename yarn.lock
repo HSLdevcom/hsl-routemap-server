@@ -2523,10 +2523,10 @@ baseline-browser-mapping@^2.10.12:
   resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.10.13.tgz#5a154cc4589193015a274e3d18319b0d76b9224e"
   integrity sha512-BL2sTuHOdy0YT1lYieUxTw/QMtPBC3pmlJC6xk8BBYVv6vcw3SGdKemQ+Xsx9ik2F/lYDO9tqsFQH1r9PFuHKw==
 
-basic-ftp@5.2.1, basic-ftp@^5.0.2:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/basic-ftp/-/basic-ftp-5.2.1.tgz#818ba176e0e52a9e746e8576331f7e9474b94668"
-  integrity sha512-0yaL8JdxTknKDILitVpfYfV2Ob6yb3udX/hK97M7I3jOeznBNxQPtVvTUtnhUkyHlxFWyr5Lvknmgzoc7jf+1Q==
+basic-ftp@5.3.0, basic-ftp@^5.0.2:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/basic-ftp/-/basic-ftp-5.3.0.tgz#88f057d1ba8442643c505c4c83bbaa4442b15cfd"
+  integrity sha512-5K9eNNn7ywHPsYnFwjKgYH8Hf8B5emh7JKcPaVjjrMJFQQwGpwowEnZNEtHs7DfR7hCZsmaK3VA4HUK0YarT+w==
 
 batch@0.6.1:
   version "0.6.1"
@@ -5331,7 +5331,7 @@ hsl-map-style@hsldevcom/hsl-map-style#zone_e_map_styles:
   version "1.2.3"
   resolved "https://codeload.github.com/hsldevcom/hsl-map-style/tar.gz/15c993d80e1af9d80bb07566b75a48c9bef15001"
   dependencies:
-    lodash "^4.18.1"
+    lodash "^4.17.4"
 
 html-minifier-terser@^5.0.1:
   version "5.1.1"
