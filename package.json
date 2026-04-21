@@ -1,6 +1,6 @@
 {
   "name": "hsl-routemap-server",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "HSL Routemap server",
   "main": "index.js",
   "scripts": {
