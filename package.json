@@ -60,7 +60,7 @@
     "eslint-webpack-plugin": "~2",
     "html-webpack-plugin": "~4",
     "husky": "^8.0.0",
-    "lint-staged": "^13.0.2",
+    "lint-staged": "^15.0.0",
     "prettier": "^2.8.8",
     "raw-loader": "^4.0.2",
     "react-hot-loader": "^4.13.1",
@@ -78,7 +78,7 @@
     "apollo-link-http": "^1.2.0",
     "bullmq": "^1.86.2",
     "dotenv": "^8.0.0",
-    "forever": "^4.0.3",
+
     "fs-extra": "^8.1.0",
     "graphql": "^0.11.7",
     "graphql-tag": "^2.5.0",
@@ -90,7 +90,7 @@
     "koa-router": "7.3.0",
     "koa-session": "^5.10.1",
     "lodash": "^4.18.1",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.7.0",
     "nodemon": "^3.1.14",
     "pg": "^8.7.3",
     "pm2": "^6.0.14",
@@ -106,13 +106,9 @@
     "validator": "^13.15.22",
     "viewport-mercator-project": "^4.1.1"
   },
-  "resolutions": {
-    "node-fetch": "2.6.7",
-    "flatted": "3.4.2",
-    "lodash": "4.18.1",
-    "nconf": "0.13.0",
-    "minimist": "1.2.8",
+  "overrides": {
     "braces": "3.0.3",
-    "basic-ftp": "5.2.1"
+    "minimist": "1.2.8",
+    "micromatch": "4.0.8"
   }
 }
