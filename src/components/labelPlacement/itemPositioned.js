@@ -14,11 +14,15 @@ class ItemPositioned extends Component {
   }
 
   setPosition(top, left, visible) {
+    const finalVisible = visible || !this.props.allowHidden;
+
     this.setState({
       top,
       left,
-      visible: visible || !this.props.allowHidden,
+      visible: finalVisible,
     });
+
+    return finalVisible;
   }
 
   getVisible() {
@@ -36,7 +40,7 @@ class ItemPositioned extends Component {
       visible: this.state.visible,
       anglePriority: this.props.anglePriority,
       distancePriority: this.props.distancePriority,
-      showBoxAndAnker: this.props.showBoxAndAnker,
+      showBoxAndAnchor: this.props.showBoxAndAnchor,
       lineOverlapPriority: this.props.lineOverlapPriority,
       alphaOverlapPriority: this.props.alphaOverlapPriority,
       maxDistance: this.props.maxDistance,
@@ -51,25 +55,23 @@ class ItemPositioned extends Component {
     const style = {
       ...this.state,
       position: 'absolute',
+      visibility: this.state.visible ? 'visible' : 'hidden',
     };
 
     if (this.props.transform !== 0) {
       style.transform = `rotate(${this.props.transform}deg)`;
     }
 
-    if (this.state.visible) {
-      return (
-        <div
-          ref={(ref) => {
-            this.root = ref;
-          }}
-          style={style}
-        >
-          {this.props.children}
-        </div>
-      );
-    }
-    return <div />;
+    return (
+      <div
+        ref={(ref) => {
+          this.root = ref;
+        }}
+        style={style}
+      >
+        {this.props.children}
+      </div>
+    );
   }
 }
 
@@ -80,7 +82,7 @@ ItemPositioned.defaultProps = {
   anglePriority: 0,
   distancePriority: 1,
   lineOverlapPriority: 1,
-  showBoxAndAnker: true,
+  showBoxAndAnchor: true,
   alphaOverlapPriority: 1,
   maxDistance: null,
   anchorWidth: 0.5,
@@ -101,7 +103,7 @@ ItemPositioned.propTypes = {
   anglePriority: PropTypes.number,
   distancePriority: PropTypes.number,
   lineOverlapPriority: PropTypes.number,
-  showBoxAndAnker: PropTypes.bool,
+  showBoxAndAnchor: PropTypes.bool,
   alphaOverlapPriority: PropTypes.number,
   maxDistance: PropTypes.number,
   anchorWidth: PropTypes.number,
