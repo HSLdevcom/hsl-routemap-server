@@ -21,7 +21,8 @@ class ItemContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps !== this.props) {
+    // Only restart the worker when the alpha channel image has arrived or changed.
+    if (prevProps.alphaChannel !== this.props.alphaChannel) {
       this.worker.terminate();
       this.updateChildren();
     }
@@ -68,6 +69,7 @@ class ItemContainer extends Component {
     });
 
     this.worker.addEventListener('error', (event) => {
+      console.error(`[labelPlacement] Worker error — ${event.message}`); // eslint-disable-line no-console
       renderQueue.remove(this, { error: new Error(event.message) });
     });
 
@@ -97,8 +99,7 @@ class ItemContainer extends Component {
         className={styles.root}
         ref={(ref) => {
           this.root = ref;
-        }}
-      >
+        }}>
         {this.state.items && (
           <ItemOverlay
             width={this.root.offsetWidth}

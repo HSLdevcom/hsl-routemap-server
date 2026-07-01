@@ -70,7 +70,7 @@ async function getBuild({ id }) {
 
   const build = convertKeys(buildRow, camelCase);
   const posters = posterRows.map((row) => convertKeys(row, camelCase));
-  return { ...build, posters};
+  return { ...build, posters };
 }
 
 async function addBuild({ title }) {

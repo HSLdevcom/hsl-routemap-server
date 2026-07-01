@@ -28,7 +28,13 @@ const {
 } = require('./joreStore');
 const { downloadPostersFromCloud } = require('./cloudService');
 
-const { REDIS_CONNECTION_STRING, GROUP_GENERATE } = require('../constants');
+const {
+  REDIS_CONNECTION_STRING,
+  GROUP_GENERATE,
+  GENERATE_API_URL,
+  JORE_GRAPHQL_URL,
+  PG_CONNECTION_STRING,
+} = require('../constants');
 
 const PORT = 4000;
 
@@ -91,7 +97,7 @@ async function generatePoster(buildId, props) {
     props,
   };
 
-  queue.add('generate', { options }, { jobId: id });
+  await queue.add('generate', { options }, { jobId: id });
 
   return { id };
 }
