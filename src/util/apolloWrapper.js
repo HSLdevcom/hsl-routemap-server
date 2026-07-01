@@ -10,6 +10,7 @@ const updateQueueOnChange = lifecycle({
       renderQueue.add(this);
     }
     if (this.props.data.error) {
+      console.error(`[apollo] Query error on mount — ${this.props.data.error.message}`); // eslint-disable-line no-console
       renderQueue.remove(this, { error: this.props.data.error });
     }
   },
@@ -18,6 +19,7 @@ const updateQueueOnChange = lifecycle({
       if (this.props.data.loading) {
         renderQueue.add(this);
       } else if (this.props.data.error) {
+        console.error(`[apollo] Query finished with error — ${this.props.data.error.message}`); // eslint-disable-line no-console
         renderQueue.remove(this, { error: this.props.data.error });
       } else {
         renderQueue.remove(this);
@@ -30,8 +32,8 @@ const updateQueueOnChange = lifecycle({
 });
 
 const renderNull = branch(
-  props => props.data.error || props.data.loading,
+  (props) => props.data.error || props.data.loading,
   () => () => null,
 );
 
-export default hoc => compose(updateQueueOnChange, renderNull, hoc);
+export default (hoc) => compose(updateQueueOnChange, renderNull, hoc);

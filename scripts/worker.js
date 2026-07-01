@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
 const { uploadPosterToCloud } = require('./cloudService');
 const { addEvent, getPoster, updatePoster } = require('./store');
 
-const { REDIS_CONNECTION_STRING } = require('../constants');
+const { REDIS_CONNECTION_STRING, GENERATE_API_URL } = require('../constants');
 
 const CLIENT_URL = 'http://localhost:5000';
 const RENDER_TIMEOUT = 24 * 60 * 60 * 1000;
@@ -20,7 +20,10 @@ const outputPath = path.join(__dirname, '..', 'output');
 const pdfPath = (id) => path.join(outputPath, `${id}.pdf`);
 
 async function initialize() {
-  browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    protocolTimeout: RENDER_TIMEOUT,
+  });
   browser.on('disconnected', () => {
     browser = null;
   });
@@ -34,6 +37,10 @@ async function renderComponent(options) {
   const { id, props, onInfo, onError } = options;
   props.id = id;
   const page = await browser.newPage();
+
+  // Disable HTTP cache so we never serve a stale bundle from a previous
+  // yarn start (webpack-dev-server) session that may have been cached.
+  await page.setCacheEnabled(false);
 
   page.on('error', async (error) => {
     await page.close();
@@ -50,12 +57,13 @@ async function renderComponent(options) {
   page.on('console', (msg) => {
     if (['warning', 'log'].includes(msg.type())) {
       onInfo(`Console(${msg.type()}): ${msg.text()}`);
+    } else if (msg.type() === 'error') {
+      onError(new Error(`Console(error): ${msg.text()}`));
     }
   });
 
   const encodedProps = encodeURIComponent(JSON.stringify(props));
   const renderUrl = `${CLIENT_URL}/?props=${encodedProps}`;
-  console.log(renderUrl);
 
   await page.goto(renderUrl, { timeout: RENDER_TIMEOUT });
 
@@ -79,7 +87,6 @@ async function renderComponent(options) {
   });
 
   await page.emulateMediaType('screen');
-
   const printOptions = {
     printBackground: true,
     width: width * SCALE,
@@ -147,14 +154,13 @@ async function generate(options) {
   currentJob = id;
 
   const onInfo = (message) => {
-    const date = new Date().toUTCString();
-    console.log(`${date} ${id}: ${message}`); // eslint-disable-line no-console
     addEvent({ posterId: id, type: 'INFO', message });
   };
 
   const onError = (error) => {
     const date = new Date().toUTCString();
-    console.error(`${date} ${id}: ${error.message} ${error.stack}`); // eslint-disable-line no-console
+    const cause = error.cause ? ` [cause: ${error.cause.message}]` : '';
+    console.error(`${date} ${id}: ${error.message}${cause} ${error.stack}`); // eslint-disable-line no-console
     addEvent({ posterId: id, type: 'ERROR', message: error.message });
   };
 
