@@ -25,5 +25,5 @@ jobs:
           push: true
           tags: hsldevcom/hsl-routemap-server:login_testing
           build-args: |
-            BUILD_ENV=dev
-            DIGITRANSIT_APIKEY=${{ secrets.KARTAT_DIGITRANSITAPIKEY_DEV }}
+            BUILD_ENV=prod
+            DIGITRANSIT_APIKEY=${{ secrets.KARTAT_DIGITRANSITAPIKEY_PROD }}
