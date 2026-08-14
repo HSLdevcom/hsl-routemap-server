@@ -8,12 +8,19 @@ const hasAllowedGroup = async (userInfo) => {
   const groups = get(userInfo, 'groups', {});
 
   if (!groups || !Array.isArray(groups)) {
-    console.log('User does not have valid groups assigned');
+    // LOGIN_DEBUG: raw groups value helps distinguish "missing claim" vs "wrong shape"
+    console.log('[LOGIN_DEBUG] User does not have valid groups assigned', { groups });
     return false;
   }
   if (groups.includes(GROUP_GENERATE) || groups.includes(GROUP_READONLY)) {
     return true;
   }
+  // LOGIN_DEBUG: log the groups vs. what's expected so mismatches are obvious
+  console.log('[LOGIN_DEBUG] No allowed group match', {
+    userGroups: groups,
+    expectedGenerate: GROUP_GENERATE,
+    expectedReadonly: GROUP_READONLY,
+  });
   return false;
 };
 
@@ -21,6 +28,13 @@ const authorize = async (req, res, session) => {
   const authRequest = req.body;
   const modifiedSession = clone(session);
   const { isTesting } = authRequest;
+
+  // LOGIN_DEBUG: entry point trace for every /login call
+  console.log('[LOGIN_DEBUG] authorize called', {
+    hasSession: !!session,
+    isTesting: !!isTesting,
+    hasCode: !!authRequest.code,
+  });
 
   if (modifiedSession && isTesting) {
     // When testing, code is already an access token (because tests fetched code with password grant request that gives you the correct access token)
@@ -39,7 +53,7 @@ const authorize = async (req, res, session) => {
   }
 
   if (!authRequest.code) {
-    console.log('No authorization code');
+    console.log('[LOGIN_DEBUG] 401: No authorization code in request body');
     return {
       body: {
         isOk: false,
@@ -54,6 +68,7 @@ const authorize = async (req, res, session) => {
     const userInfo = await AuthService.requestUserInfo(modifiedSession.accessToken);
     const isAllowed = await hasAllowedGroup(userInfo);
     if (!isAllowed) {
+      console.log('[LOGIN_DEBUG] 401: No allowed group for user', { email: userInfo.email });
       return {
         status: 401,
         body: {
@@ -77,7 +92,10 @@ const authorize = async (req, res, session) => {
       modifiedSession,
     };
   }
-  console.log('No access token: ', tokenResponse);
+  console.log('[LOGIN_DEBUG] 401: No access token in token response', {
+    hadSession: !!session,
+    tokenResponse,
+  });
   const response = {
     isOk: false,
   };
