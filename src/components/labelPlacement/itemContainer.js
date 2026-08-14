@@ -21,7 +21,8 @@ class ItemContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps !== this.props) {
+    // Only restart the worker when the alpha channel image has arrived or changed.
+    if (prevProps.alphaChannel !== this.props.alphaChannel) {
       this.worker.terminate();
       this.updateChildren();
     }
@@ -42,25 +43,33 @@ class ItemContainer extends Component {
     };
 
     // Get refs to mounted children
-    const refs = this.childRefs.filter(ref => !!ref);
+    const refs = this.childRefs.filter((ref) => !!ref);
 
     // Get initial positions
-    const initialPositions = refs.map(ref => ref.getPosition());
+    const initialPositions = refs.map((ref) => ref.getPosition());
 
     this.worker = new OptimizePositionsWorker();
 
-    this.worker.addEventListener('message', event => {
+    this.worker.addEventListener('message', (event) => {
       const positions = event.data;
       refs.forEach((ref, index) => {
-        ref.setPosition(positions[index].top, positions[index].left, positions[index].visible);
-        positions[index].visible = ref.getVisible();
+        positions[index].visible = ref.setPosition(
+          positions[index].top,
+          positions[index].left,
+          positions[index].visible,
+        );
+      });
+
+      this.setState({
+        items: positions.filter(({ isFixed, visible }) => !isFixed && visible),
       });
 
       this.setState({ items: positions.filter(({ isFixed }) => !isFixed) });
       renderQueue.remove(this);
     });
 
-    this.worker.addEventListener('error', event => {
+    this.worker.addEventListener('error', (event) => {
+      console.error(`[labelPlacement] Worker error — ${event.message}`); // eslint-disable-line no-console
       renderQueue.remove(this, { error: new Error(event.message) });
     });
 
@@ -79,7 +88,7 @@ class ItemContainer extends Component {
     this.childRefs = [];
     const children = React.Children.map(this.props.children, (child, index) => {
       const props = {
-        ref: ref => {
+        ref: (ref) => {
           this.childRefs[index] = ref;
         },
       };
@@ -88,7 +97,7 @@ class ItemContainer extends Component {
     return (
       <div
         className={styles.root}
-        ref={ref => {
+        ref={(ref) => {
           this.root = ref;
         }}>
         {this.state.items && (

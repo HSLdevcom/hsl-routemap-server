@@ -14,16 +14,27 @@ export function fetchMap(mapOptions, mapStyle, scale = scaleDefault) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ options: { ...mapOptions, scale }, style: mapStyle }),
   };
-  console.log(`generating tileset with ${API_URL}/generateImage`);
-  return fetch(`${API_URL}/generateImage`, options)
-    .then(response => response.blob())
+  const url = `${API_URL}/generateImage`;
+  return fetch(url, options)
+    .then((response) => {
+      if (!response.ok) {
+        console.error(`[fetchMap] HTTP ${response.status} from ${url}`);
+        throw new Error(`generateImage responded with ${response.status}`);
+      }
+      return response.blob();
+    })
     .then(
-      blob =>
-        new Promise(resolve => {
+      (blob) =>
+        new Promise((resolve) => {
           const reader = new window.FileReader();
           reader.readAsDataURL(blob);
-          reader.onloadend = () => resolve(reader.result);
-          console.info('Fetched map:');
+          reader.onloadend = () => {
+            resolve(reader.result);
+          };
         }),
-    );
+    )
+    .catch((err) => {
+      console.error(`[fetchMap] Failed — ${err.message}`);
+      throw err;
+    });
 }

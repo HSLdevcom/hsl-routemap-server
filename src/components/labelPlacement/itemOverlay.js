@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const MASK_MARGIN = 5;
 
-const Line = props => (
+const Line = (props) => (
   <path
     d={`M${props.x} ${props.y} L${props.x + props.cx} ${props.y + props.cy}`}
     fill="none"
@@ -26,7 +26,7 @@ Line.propTypes = {
   index: PropTypes.number.isRequired,
 };
 
-const ClipPath = props => (
+const ClipPath = (props) => (
   <clipPath id={`label-mask-${props.index}`}>
     <path
       d={`
@@ -57,12 +57,19 @@ ClipPath.propTypes = {
   index: PropTypes.number.isRequired,
 };
 
-const ItemOverlay = props => (
-  <svg width={props.width} height={props.height}>
-    <defs>
-      {props.items
-        .filter(({ showBoxAndAnker }) => showBoxAndAnker)
-        .map((item, index) => (
+const isValidLine = (item) =>
+  [item.x, item.y, item.left, item.top, item.width, item.height].every(Number.isFinite);
+
+const ItemOverlay = (props) => {
+  const visibleAnchorItems = props.items.filter((item) => {
+    const ok = item.showBoxAndAnchor && item.visible && isValidLine(item);
+    return ok;
+  });
+
+  return (
+    <svg width={props.width} height={props.height}>
+      <defs>
+        {visibleAnchorItems.map((item, index) => (
           <ClipPath
             key={index}
             index={index}
@@ -71,14 +78,14 @@ const ItemOverlay = props => (
             {...item}
           />
         ))}
-    </defs>
-    {props.items
-      .filter(({ showBoxAndAnker }) => showBoxAndAnker)
-      .map((item, index) => (
+      </defs>
+
+      {visibleAnchorItems.map((item, index) => (
         <Line key={index} index={index} {...item} />
       ))}
-  </svg>
-);
+    </svg>
+  );
+};
 
 ItemOverlay.propTypes = {
   width: PropTypes.number.isRequired,
