@@ -331,6 +331,14 @@ async function main() {
   });
 
   router.post('/login', async (ctx) => {
+    // LOGIN_DEBUG: log incoming request shape to confirm client is actually sending a code
+    console.log('[LOGIN_DEBUG] POST /login received', {
+      origin: ctx.request.header.origin,
+      contentType: ctx.request.header['content-type'],
+      bodyKeys: ctx.request.body ? Object.keys(ctx.request.body) : [],
+      hasCode: !!(ctx.request.body && ctx.request.body.code),
+      hasExistingSession: !!(ctx.session && ctx.session.accessToken),
+    });
     const authResponse = await authEndpoints.authorize(ctx.request, ctx.response, ctx.session);
     console.log(JSON.stringify(authResponse.body));
     ctx.session = null;
