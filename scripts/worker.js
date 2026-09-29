@@ -20,10 +20,14 @@ const outputPath = path.join(__dirname, '..', 'output');
 const pdfPath = (id) => path.join(outputPath, `${id}.pdf`);
 
 async function initialize() {
-  browser = await puppeteer.launch({
+  const launchOptions = {
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     protocolTimeout: RENDER_TIMEOUT,
-  });
+  };
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+  browser = await puppeteer.launch(launchOptions);
   browser.on('disconnected', () => {
     browser = null;
   });
