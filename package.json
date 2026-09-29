@@ -125,7 +125,7 @@
     "nodemon/**/brace-expansion": "5.0.9",
     "js-yaml": "4.3.2",
     "postcss": "8.5.26",
-    "fast-uri": "3.1.6",
+    "fast-uri": "3.1.7",
     "systeminformation": "5.33.1",
     "ip-address": "10.4.0",
     "webpack/**/browserslist": "4.28.7",
