@@ -21,6 +21,14 @@ const iterationsPerFactor = 10;
 const angles = [-6, -3, -1, 0, 1, 3, 6];
 const distances = [-4, -2, -1, 0, 1, 2, 4];
 const factors = [30, 15, 7, 3];
+const overlappingDiffs = [
+  { angle: -15, distance: 0 },
+  { angle: 15, distance: 0 },
+  { angle: -30, distance: 0 },
+  { angle: 30, distance: 0 },
+  { angle: 0, distance: 10 },
+  { angle: 0, distance: 20 },
+];
 
 const diffsArray = factors.map((factor) =>
   angles.reduce(
@@ -141,12 +149,28 @@ function getNextPlacement(initialPlacement, index, diffs, bbox, alphaByteArray, 
   const placementsOverlapping = placements.reduce((prev, placement) => {
     const overlapIndex = getOverlappingItem(placement, index);
     const position = placement.positions[index];
-    if (!overlapIndex || (!position.shouldBeVisible && position.allowHidden)) return prev;
+
+    if (overlapIndex === null || (!position.shouldBeVisible && position.allowHidden)) {
+      return prev;
+    }
+
     return [
       ...prev,
-      ...getPlacements(placement, overlapIndex, diffs, bbox, alphaByteArray, configuration),
+      ...getPlacements(
+        {
+          positions: placement.positions,
+          indexes: [index],
+        },
+        overlapIndex,
+        overlappingDiffs,
+        bbox,
+        alphaByteArray,
+        configuration,
+      ),
     ];
   }, []);
+
+  // const placementsOverlapping = [];
 
   const nextPlacement = [initialPlacement, ...placements, ...placementsOverlapping].reduce(
     (prev, cur) => comparePlacements(prev, cur, bbox, alphaByteArray, closeByPositions),
@@ -158,18 +182,27 @@ function getNextPlacement(initialPlacement, index, diffs, bbox, alphaByteArray, 
 function findMostSuitablePosition(initialPlacement, bbox, isOccupied, configuration) {
   const start = Date.now();
   let placement = initialPlacement;
-  const iter = factors.length * iterationsPerFactor;
-  let counter = 0;
+  const totalIterations = factors.length * iterationsPerFactor;
+  let iterationCounter = 0;
+  const totalStartedAt = Date.now();
   for (let factor = 0; factor < factors.length; factor++) {
     const diffs = diffsArray[factor];
     for (let iteration = 0; iteration < iterationsPerFactor; iteration++) {
-      console.info(`${counter}/${iter}`); // eslint-disable-line
-      counter++;
+      iterationCounter++;
       const previous = placement;
       for (let index = 0; index < placement.positions.length; index++) {
+        const startedAt = Date.now();
         if (!placement.positions[index].isFixed) {
           placement = getNextPlacement(placement, index, diffs, bbox, isOccupied, configuration);
         }
+        // const elapsed = Date.now() - startedAt;
+        // const totalElapsed = Date.now() - totalStartedAt;
+        /* console.log( // eslint-disable-line no-console
+          `index: ${index}/${placement.positions.length}, ` +
+            `elapsed=${elapsed}ms, ` +
+            `iteration: ${iterationCounter}/${totalIterations}, ` +
+            `totalElapsed=${totalElapsed}ms`,
+        ); */
         if (Date.now() - start > timeout) {
           console.log('Timeout'); // eslint-disable-line
           return placement.positions;
