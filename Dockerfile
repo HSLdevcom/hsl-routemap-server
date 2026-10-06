@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 
 # This installs the necessary libs to make the bundled version of Chromium that Pupppeteer installs work
 RUN apt-get update \
@@ -10,7 +10,10 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -yq google-chrome-stable libxss1 --no-install-recommends \
   && wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1 && rm azcopy_v10.tar.gz \
   && mv ./azcopy /usr/bin/ \
-  && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 ENV WORK=/opt/publisher
 # ENV NODE_ENV production # Cannot use until devdependency list is fixed in package.json
